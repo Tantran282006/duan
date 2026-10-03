@@ -10,13 +10,15 @@
 - **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
 - **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
+- **Character**: đã làm sạch/căn 6 sheet (32 frame), thêm Male_A_Idle/Female_A_Idle, nguồn giữ tại `img/character`; công cụ Editor dùng chung và hướng dẫn `docs/CHARACTER_CLEANUP.md` đã có. PNG/frame đã kiểm tra; chưa compile hoặc chạy công cụ trong Unity.
+
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. M0: mở `Assets/unity.unity`, kiểm tra Game view Full HD 16:9 và tinh chỉnh tỉ lệ nhỏ nếu cần.
-2. M0: thử di chuyển Main Camera theo trục X để kiểm tra trời, phố xa và tiền cảnh parallax đúng tốc độ.
-3. M0: hoàn thiện URP 2D, Addressables và Localization.
-4. M0: dựng backend dev local bằng Docker (Nakama + PostgreSQL), kiểm tra Unity kết nối và đăng nhập thử.
-5. M1: bảng `players`, `wallets`, `ledger` + RPC có `idempotency_key` + unit test.
+1. M0: compile Unity, chạy `Phố Nhỏ > Character > Làm sạch và căn toàn bộ`; kiểm tra 32 frame/pivot trên nền sáng và tối.
+2. M0: nối Walk/Idle vào Animator hiện có; kiểm tra hướng trái/phải, tư thế gốc còn lệch và ảnh cũ có frame lặp.
+3. M0: kiểm tra `Assets/unity.unity` Full HD 16:9 và di chuyển Main Camera theo X để kiểm tra parallax.
+4. M0: hoàn thiện URP 2D, Addressables và Localization.
+5. M0: dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -54,6 +56,7 @@
 | D30 | Môi trường thời tiết động Parallax (nắng, mưa bay, lá rụng) + chu kỳ ngày/đêm phố lên đèn | CHỐT |
 | D31 | Kiểm duyệt UGC giai đoạn đầu: tập trung nút Báo cáo đánh giá sai cho chủ quán | CHỐT |
 | D32 | Điều kiện cụ thể để mở đổi nghề: để dành khi bắt đầu phát triển bản cập nhật tương lai | CHỐT |
+| D33 | Nhân vật nam/nữ trang phục A (áo kem, short xanh/hồng); sprite sheet hiện dùng để thử art, không thay quyết định Spine D25. Nguồn trong img/character, đầu ra căn theo ô 512×640/pivot chân. | CHỐT (A) / GIẢ ĐỊNH (quy chuẩn kỹ thuật) |
 
 ## OPEN QUESTIONS (cần người dùng trả lời)
 
@@ -61,6 +64,16 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 4 — 2026-10-03
+- **Mốc**: M0 (Character cleanup).
+- **Đã làm**: xử lý cả 4 sheet Walk cũ và 2 sheet Idle mới, tổng 32 frame; xóa alpha thấp/mảnh rời, sửa màu mép, căn thân và điểm đặt chân, giữ nguồn gốc.
+- **Công cụ**: menu Character làm sạch/căn toàn bộ hoặc ảnh chọn 1/4/8 frame; cấu hình JSON dùng chung; import xóa alpha thấp cho ảnh mới.
+- **File chính**: `Assets/PhoNho/Art/Characters/*.png`, `Assets/PhoNho/Editor/CharacterSheet*.cs`, `CharacterTexturePostprocessor.cs`, `CharacterSheets.json`, `docs/CHARACTER_CLEANUP.md`.
+- **Kiểm tra**: decoder PNG/CRC, 32 frame, alpha/RGB ngoài silhouette, không cắt mép, baseline 574–575, bước làm sạch alpha ổn định khi chạy lại, test nhiễu tổng hợp; xem toàn bộ sheet.
+- **Cách chạy**: pull nhánh và menu `Phố Nhỏ > Character > Làm sạch và căn toàn bộ`; hướng dẫn/prompt IDE trong docs.
+- **Nợ kỹ thuật**: chưa có Unity Editor để compile/chạy importer/slicing; góc nhìn và tư thế lặp trong ảnh AI chưa được sửa, chưa tạo Spine rig.
+
 
 
 ### Phiên 3 — 2026-10-03
