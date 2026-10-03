@@ -72,9 +72,10 @@
   - Khởi tạo script mẫu [PhoNhoConstants.cs](file:///d:/new/Assets/PhoNho/Scripts/Domain/PhoNhoConstants.cs) với namespace chuẩn `PhoNho.Domain`.
   - Tạo [.gitignore](file:///d:/new/.gitignore) chuẩn cho Unity (bỏ qua Library, Temp, Logs, UserSettings).
   - Khởi tạo git repository nhánh `main` và hoàn tất commit ban đầu (`feat(init)`).
+  - Kết nối remote repository và hoàn tất đẩy toàn bộ mã nguồn lên GitHub: `https://github.com/Tantran282006/duan.git`.
 - **File chính**: [.gitignore](file:///d:/new/.gitignore), [PhoNhoConstants.cs](file:///d:/new/Assets/PhoNho/Scripts/Domain/PhoNhoConstants.cs), [PROGRESS.md](file:///d:/new/PROGRESS.md).
-- **Kiểm tra**: `git status` sạch, commit đã ghi nhận toàn bộ file mã nguồn, meta và tài liệu.
-- **Việc tiếp theo**: Nhận URL remote repository từ người dùng và push lên GitHub.
+- **Kiểm tra**: `git push -u origin main` thành công 100%, repo GitHub đã có nhánh `main` đầy đủ.
+- **Việc tiếp theo**: Tiếp tục hoàn thiện Scene 2D Parallax và thiết lập backend local Docker Nakama + DB.
 
 ### Phiên 1 — Đặc tả UI/Art Brief & Khung Asset
 - **Mốc**: Chuẩn bị / Tài liệu thiết kế
