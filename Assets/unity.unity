@@ -1540,15 +1540,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!1660057539 &9223372036854775807
-SceneRoots:
-  m_ObjectHideFlags: 0
-  m_Roots:
-  - {fileID: 1834177953}
-  - {fileID: 847346260}
-  - {fileID: 102748041}
-  - {fileID: 1645101358}
-  - {fileID: 399159677}
 --- !u!1 &300000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1878,3 +1869,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhoNho.Map.ParallaxLayer
   _cameraTransform: {fileID: 1834177953}
   _movementMultiplier: {x: -0.12, y: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1834177953}
+  - {fileID: 847346260}
+  - {fileID: 102748041}
+  - {fileID: 1645101358}
+  - {fileID: 399159677}
