@@ -5,18 +5,18 @@
 ## TRẠNG THÁI HIỆN TẠI
 
 - **Mốc hiện tại**: M0 (Khởi tạo dự án Unity & nạp Asset cơ bản)
-- **Đã có**: bộ tài liệu thiết kế, cấu trúc thư mục chuẩn `Assets/PhoNho/` trong Unity (Art, Audio, Config, Prefabs, Scenes, Scripts), 13 background assets đã nạp vào `Assets/PhoNho/Art/Backgrounds/`.
+- **Đã có**: bộ tài liệu thiết kế, cấu trúc thư mục chuẩn `Assets/PhoNho/`, 13 background assets, script parallax và công cụ dựng tự động scene phố mẫu cân chỉnh.
 - **Chưa có**: backend dev local (Docker Nakama + PostgreSQL), code logic gameplay đầy đủ.
-- **Chạy được**: Unity Editor đã nhận diện các thư mục và asset trong Project window.
-- **Nợ kỹ thuật / lỗi đã biết**: không.
+- **Chạy được**: trong Unity dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để tạo `Assets/PhoNho/Scenes/CityOverworld_ArtLayout.unity`.
+- **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene sinh ra ở Game view 16:9 trên máy có Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. Chốt backend với người dùng (đề xuất Nakama + PostgreSQL), ghi vào DECISIONS.
-2. M0: tạo cấu trúc thư mục (AGENTS.md §5), khởi tạo Unity project 2D (URP 2D, Addressables, Localization).
-3. M0: dựng backend dev local bằng Docker (DB + server), kiểm tra Unity kết nối và đăng nhập thử.
-4. M1: bảng `players`, `wallets`, `ledger` + RPC cộng/trừ tiền có `idempotency_key` + unit test.
-5. M1: cơ chế nạp file config (JSON) cho client và server.
+1. M0: chạy công cụ dựng phố mẫu, kiểm tra Game view 16:9 và tinh chỉnh tỉ lệ nếu cần.
+2. M0: commit scene `CityOverworld_ArtLayout.unity` được Unity sinh ra sau khi đã duyệt trực quan.
+3. M0: hoàn thiện URP 2D, Addressables và Localization.
+4. M0: dựng backend dev local bằng Docker (Nakama + PostgreSQL), kiểm tra Unity kết nối và đăng nhập thử.
+5. M1: bảng `players`, `wallets`, `ledger` + RPC có `idempotency_key` + unit test.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -61,6 +61,19 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+
+### Phiên 3 — 2026-10-03
+- **Mốc**: M0 (Scene phố 2D Parallax)
+- **Đã làm**:
+  - Thêm `ParallaxLayer` với hệ số riêng cho trời, phố xa và tiền cảnh.
+  - Thêm công cụ Editor dựng scene mới từ các asset hiện có, không ghi đè scene đang mở.
+  - Cân lại bố cục: vỉa hè thấp hơn, shop đồng đều, ghế/đèn nhỏ hơn, phố xa nhạt và thêm cây trung cảnh.
+  - Scene đầu ra dùng Camera Orthographic 16:9 và lưu tại `Assets/PhoNho/Scenes/CityOverworld_ArtLayout.unity`.
+- **File chính**: `Assets/PhoNho/Scripts/Map/ParallaxLayer.cs`, `Assets/PhoNho/Editor/PhoNhoStreetSceneBuilder.cs`.
+- **Cách chạy/kiểm tra**: mở Unity, chọn `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh`, xem Game view Full HD 16:9.
+- **Lỗi / nợ kỹ thuật**: chưa thể chạy Unity Editor trong môi trường GitHub connector; cần kiểm tra trực quan sau khi Pull.
+
 
 ### Phiên 2 — Khởi tạo cấu trúc Unity, Import Asset & Thiết lập Git
 - **Mốc**: M0 (Khởi tạo dự án)
