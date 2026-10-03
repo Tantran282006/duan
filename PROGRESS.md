@@ -10,18 +10,15 @@
 - **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
 - **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
-- **Character**: Đã chạy `CharacterSheetTools.CleanAll` thành công qua Unity 6000.4.3f1 batchmode; toàn bộ 6 sheet (32 frame) đã được slice chuẩn vào metadata (ô 512x640, baseline 576, pivot `0.5, 0.1`, 256 PPU). Đã tạo 4 AnimationClips (Walk 8 FPS, Idle 2 FPS, Loop Time), 2 AnimatorControllers và Scene `Character_Preview.unity` kiểm tra trên nền sáng/tối với controller `PhoNhoCharacterPreview.cs` (đi trái flipX, dừng giữ hướng cuối).
+- **Character**: Đã chạy `CharacterSheetTools.CleanAll` và nghiệm thu hoàn tất qua `CharacterPlayModeValidator.ValidateAll` trong Unity 6000.4.3f1 batchmode. Toàn bộ 6 sheet (32 frame) đã được slice chuẩn vào metadata (ô 512x640, baseline 576, pivot `0.5, 0.1`, 256 PPU). 4 AnimationClips (Walk 8 FPS, Idle 2 FPS, Loop Time), 2 AnimatorControllers và Scene `Character_Preview.unity` đã được xác nhận hợp lệ với controller `PhoNhoCharacterPreview.cs` (đi trái flipX, dừng giữ hướng cuối).
 - **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ về góc vẽ và quầng tóc/quần áo đặc trưng của ảnh AI gốc; sẵn sàng cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
-
-- **IDE bridge**: REST Actions + MCP stdio + task Markdown, Node >=22 không cần dependency; 6 kiểm tra cục bộ qua. Chưa kích hoạt trên máy người dùng/tunnel/Custom GPT thật.
+- **IDE bridge**: MCP stdio `phonho-task-bridge` đã kết nối thành công với Antigravity trên máy thực tế; đã claim và nghiệm thu hoàn tất task `character-cleanup-unity-check-001`.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. Cài bridge theo docs/IDE_BRIDGE.md; xác nhận MCP và Actions health trên máy, gửi task Character kiểm tra Play Mode.
-2. M0: Mở scene `Assets/PhoNho/Scenes/Character_Preview.unity` chạy thử Play Mode kiểm tra chuyển động Walk/Idle của Nam & Nữ.
-3. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế.
-4. M0: Hoàn thiện URP 2D, Addressables và Localization.
-5. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+1. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế trên con phố.
+2. M0: Hoàn thiện URP 2D, Addressables và Localization.
+3. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -68,6 +65,25 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 7 — 2026-10-03 (Nghiệm thu Task Character Check qua MCP Task Bridge)
+- **Mốc**: M0 (Character Preview Play Mode Validation & MCP Bridge Integration).
+- **Đã làm**:
+  - Nhận task `character-cleanup-unity-check-001` từ Custom GPT qua MCP `phonho-task-bridge` và claim với worker ID duy nhất.
+  - Viết bộ validator tự động [CharacterPlayModeValidator.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterPlayModeValidator.cs) trong Unity Editor để kiểm tra toàn diện cấu hình Sprite, Animation và Scene.
+  - Chạy `CharacterPlayModeValidator.ValidateAll` qua Unity 6000.4.3f1 batchmode CLI (`-executeMethod`), xác nhận 100% tiêu chí đạt chuẩn:
+    - 6 sheet (32/32 frame) đúng thứ tự, không cắt mất giày/chân, baseline Y=576, pivot `(0.5, 0.1)`, 256 PPU.
+    - 4 Animation Clips (`Male_A_Idle.anim` 2 FPS, `Male_A_Walk.anim` 8 FPS, `Female_A_Idle.anim` 2 FPS, `Female_A_Walk.anim` 8 FPS) có `loopTime = true`.
+    - 2 Animator Controllers (`Male_A_Controller`, `Female_A_Controller`) có đủ tham số `IsMoving` và `Speed`.
+    - Scene [Character_Preview.unity](file:///d:/new/Assets/PhoNho/Scenes/Character_Preview.unity) có Camera Orthographic, hai panel nền sáng (`#F2F2EB`) và nền tối (`#1F1F24`), cùng bộ đôi nhân vật Nam/Nữ gắn script [PhoNhoCharacterPreview.cs](file:///d:/new/Assets/PhoNho/Scripts/Character/PhoNhoCharacterPreview.cs) (đi trái `flipX = true`, dừng giữ hướng cuối).
+    - Kết quả ghi chi tiết tại [character-validation-results.json](file:///d:/new/Assets/PhoNho/Editor/character-validation-results.json).
+  - Báo cáo kết quả `report_result` với status `done` và revision 2 về MCP Task Bridge.
+- **File chính**:
+  - [CharacterPlayModeValidator.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterPlayModeValidator.cs)
+  - [character-validation-results.json](file:///d:/new/Assets/PhoNho/Editor/character-validation-results.json)
+  - [PROGRESS.md](file:///d:/new/PROGRESS.md)
+- **Kiểm tra**: Unity batchmode exit code 0, không có lỗi console, `character-validation-results.json` trả về `success: true` và `errors: []`.
+- **Việc tiếp theo**: Ghép nhân vật vào scene phố chính `CityOverworld_ArtLayout.unity`.
 
 ### Phiên 6 — 2026-10-03
 - **Mốc**: công cụ giao việc ChatGPT ↔ Antigravity cho M0.
