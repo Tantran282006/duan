@@ -62,16 +62,19 @@
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
 
-### Phiên 2 — Khởi tạo cấu trúc Unity & Import Asset nền
+### Phiên 2 — Khởi tạo cấu trúc Unity, Import Asset & Thiết lập Git
 - **Mốc**: M0 (Khởi tạo dự án)
 - **Đã làm**:
   - Giải thích cơ chế quản lý file của Unity (chỉ hiện các tệp nằm trong `Assets/`).
-  - Tạo cấu trúc thư mục chuẩn Unity `Assets/PhoNho/` gồm `Art` (Backgrounds, Characters, Props, UI), `Audio` (BGM, SFX), `Config`, `Prefabs`, `Scenes`, `Scripts` (Domain, UI, Network).
+  - Hướng dẫn cấu hình Camera Orthographic 2D và xếp lớp bối cảnh (Order in Layer 0-5).
+  - Tạo cấu trúc thư mục chuẩn Unity `Assets/PhoNho/` gồm `Art`, `Audio`, `Config`, `Prefabs`, `Scenes`, `Scripts`.
   - Di chuyển/sao chép toàn bộ 13 tệp background từ `img/back/` sang `Assets/PhoNho/Art/Backgrounds/`.
   - Khởi tạo script mẫu [PhoNhoConstants.cs](file:///d:/new/Assets/PhoNho/Scripts/Domain/PhoNhoConstants.cs) với namespace chuẩn `PhoNho.Domain`.
-- **File chính**: [PhoNhoConstants.cs](file:///d:/new/Assets/PhoNho/Scripts/Domain/PhoNhoConstants.cs), [PROGRESS.md](file:///d:/new/PROGRESS.md).
-- **Kiểm tra**: Kiểm tra thư mục `Assets/PhoNho/` và kiểm tra lại cửa sổ Project trên Unity.
-- **Việc tiếp theo**: Thiết lập scene mẫu `MainStreet` và cấu hình Sprite cho các tệp ảnh nền trong Unity.
+  - Tạo [.gitignore](file:///d:/new/.gitignore) chuẩn cho Unity (bỏ qua Library, Temp, Logs, UserSettings).
+  - Khởi tạo git repository nhánh `main` và hoàn tất commit ban đầu (`feat(init)`).
+- **File chính**: [.gitignore](file:///d:/new/.gitignore), [PhoNhoConstants.cs](file:///d:/new/Assets/PhoNho/Scripts/Domain/PhoNhoConstants.cs), [PROGRESS.md](file:///d:/new/PROGRESS.md).
+- **Kiểm tra**: `git status` sạch, commit đã ghi nhận toàn bộ file mã nguồn, meta và tài liệu.
+- **Việc tiếp theo**: Nhận URL remote repository từ người dùng và push lên GitHub.
 
 ### Phiên 1 — Đặc tả UI/Art Brief & Khung Asset
 - **Mốc**: Chuẩn bị / Tài liệu thiết kế
