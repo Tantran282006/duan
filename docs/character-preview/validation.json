@@ -1,0 +1,73 @@
+{
+  "framesChecked": 32,
+  "unityEditorExecuted": false,
+  "syntheticNoiseTest": "pass",
+  "sheets": [
+    {
+      "name": "Nhân vật nam đi bộ tám khung-1.png",
+      "frameCount": 8,
+      "width": 2048,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    },
+    {
+      "name": "Chu kỳ đi bộ cô gái pastel-2.png",
+      "frameCount": 8,
+      "width": 2048,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    },
+    {
+      "name": "Bộ sprite đi bộ bốn khung-3.png",
+      "frameCount": 4,
+      "width": 1024,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    },
+    {
+      "name": "Bảng sprite đi bộ bốn khung-4.png",
+      "frameCount": 4,
+      "width": 1024,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    },
+    {
+      "name": "Male_A_Idle.png",
+      "frameCount": 4,
+      "width": 1024,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    },
+    {
+      "name": "Female_A_Idle.png",
+      "frameCount": 4,
+      "width": 1024,
+      "height": 1280,
+      "baseline": "574-575 px (last occupied pixel)",
+      "pngCRC": "pass",
+      "margins": "pass",
+      "alpha": "pass",
+      "cleanupIdempotence": "pass"
+    }
+  ]
+}

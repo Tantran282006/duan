@@ -1,0 +1,10 @@
+{
+  "sheets": [
+    { "file": "Nhân vật nam đi bộ tám khung-1.png", "columns": 4, "rows": 2 },
+    { "file": "Chu kỳ đi bộ cô gái pastel-2.png", "columns": 4, "rows": 2 },
+    { "file": "Bộ sprite đi bộ bốn khung-3.png", "columns": 2, "rows": 2 },
+    { "file": "Bảng sprite đi bộ bốn khung-4.png", "columns": 2, "rows": 2 },
+    { "file": "Male_A_Idle.png", "columns": 2, "rows": 2 },
+    { "file": "Female_A_Idle.png", "columns": 2, "rows": 2 }
+  ]
+}
