@@ -1,21 +1,19 @@
 {
     "success": true,
-    "timestamp": "2026-10-03T16:38:25.0176678Z",
-    "sheetsChecked": 6,
-    "totalSpritesCount": 32,
-    "sheetDetails": [
-        "Nhân vật nam đi bộ tám khung-1.png: 8 frames (kỳ vọng 8), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
-        "Chu kỳ đi bộ cô gái pastel-2.png: 8 frames (kỳ vọng 8), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
-        "Bộ sprite đi bộ bốn khung-3.png: 4 frames (kỳ vọng 4), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
-        "Bảng sprite đi bộ bốn khung-4.png: 4 frames (kỳ vọng 4), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
-        "Male_A_Idle.png: 4 frames (kỳ vọng 4), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
-        "Female_A_Idle.png: 4 frames (kỳ vọng 4), size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256"
+    "timestamp": "2026-10-03T17:30:14.2180691Z",
+    "oneRowStripsChecked": 4,
+    "totalSpritesCount": 16,
+    "stripDetails": [
+        "Male_A_Idle_Strip.png: 4 frames (kỳ vọng 4), 1-row valid: True, frame size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
+        "Male_A_Movement_Strip.png: 4 frames (kỳ vọng 4), 1-row valid: True, frame size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
+        "Female_A_Idle_Strip.png: 4 frames (kỳ vọng 4), 1-row valid: True, frame size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256",
+        "Female_A_Movement_Strip.png: 4 frames (kỳ vọng 4), 1-row valid: True, frame size 512x640, pivot (0.5, 0.1) valid: True, PPU: 256"
     ],
     "clipDetails": [
-        "Male_A_Idle.anim: fps=2 (kỳ vọng 2), keyframes=4, loopTime=True",
-        "Male_A_Walk.anim: fps=8 (kỳ vọng 8), keyframes=4, loopTime=True",
-        "Female_A_Idle.anim: fps=2 (kỳ vọng 2), keyframes=4, loopTime=True",
-        "Female_A_Walk.anim: fps=8 (kỳ vọng 8), keyframes=4, loopTime=True"
+        "Male_A_Idle.anim: fps=2 (kỳ vọng 2), keyframes=4, loopTime=True, stripRefValid=True",
+        "Male_A_Walk.anim: fps=8 (kỳ vọng 8), keyframes=4, loopTime=True, stripRefValid=True",
+        "Female_A_Idle.anim: fps=2 (kỳ vọng 2), keyframes=4, loopTime=True, stripRefValid=True",
+        "Female_A_Walk.anim: fps=8 (kỳ vọng 8), keyframes=4, loopTime=True, stripRefValid=True"
     ],
     "controllerDetails": [
         "Male_A_Controller.controller: states=[Idle, Walk], hasIsMoving=True, hasSpeed=True",
@@ -23,13 +21,12 @@
     ],
     "sceneValidation": [
         "Scene roots: [Main Camera, TestBackground_Light, TestBackground_Dark, Ground_Reference, Male_Character_Preview, Female_Character_Preview]",
-        "Main Camera: orthographic=True, size=4, bgColor=RGBA(0.200, 0.200, 0.220, 1.000)",
+        "Main Camera: orthographic=True, size=4",
         "TestBackground_Light: Found",
         "TestBackground_Dark: Found",
         "Ground_Reference: Found",
-        "Male Preview Go: SpriteRenderer=True, Animator=True, PhoNhoCharacterPreview=True",
-        "Female Preview Go: SpriteRenderer=True, Animator=True, PhoNhoCharacterPreview=True"
+        "Male Preview Go: SpriteRenderer=True, from1RowStrip=True, Animator=True, PhoNhoCharacterPreview=True",
+        "Female Preview Go: SpriteRenderer=True, from1RowStrip=True, Animator=True, PhoNhoCharacterPreview=True"
     ],
-    "simulationValidation": [],
     "errors": []
 }

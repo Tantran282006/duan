@@ -20,13 +20,12 @@ namespace PhoNho.Character.Editor
         {
             public bool success;
             public string timestamp;
-            public int sheetsChecked;
+            public int oneRowStripsChecked;
             public int totalSpritesCount;
-            public List<string> sheetDetails = new List<string>();
+            public List<string> stripDetails = new List<string>();
             public List<string> clipDetails = new List<string>();
             public List<string> controllerDetails = new List<string>();
             public List<string> sceneValidation = new List<string>();
-            public List<string> simulationValidation = new List<string>();
             public List<string> errors = new List<string>();
         }
 
@@ -40,35 +39,47 @@ namespace PhoNho.Character.Editor
 
             try
             {
-                // 1. Kiểm tra 6 sprite sheet metadata và 32 frame
-                string[] sheets = new[]
+                // 1. Kiểm tra 4 sprite strip 1 hàng ngang (1x4, 2048x640)
+                string[] mainStrips = new[]
                 {
-                    "Nhân vật nam đi bộ tám khung-1.png",
-                    "Chu kỳ đi bộ cô gái pastel-2.png",
-                    "Bộ sprite đi bộ bốn khung-3.png",
-                    "Bảng sprite đi bộ bốn khung-4.png",
-                    "Male_A_Idle.png",
-                    "Female_A_Idle.png"
+                    "Male_A_Idle_Strip.png",
+                    "Male_A_Movement_Strip.png",
+                    "Female_A_Idle_Strip.png",
+                    "Female_A_Movement_Strip.png"
                 };
 
-                int[] expectedFrames = new[] { 8, 8, 4, 4, 4, 4 };
-                report.sheetsChecked = sheets.Length;
+                report.oneRowStripsChecked = mainStrips.Length;
                 int totalSprites = 0;
 
-                for (int s = 0; s < sheets.Length; s++)
+                foreach (string strip in mainStrips)
                 {
-                    string path = "Assets/PhoNho/Art/Characters/" + sheets[s];
-                    var sprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
+                    string path = "Assets/PhoNho/Art/Characters/" + strip;
+                    var sprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().OrderBy(s => s.rect.x).ToArray();
                     totalSprites += sprites.Length;
 
-                    if (sprites.Length != expectedFrames[s])
+                    if (sprites.Length != 4)
                     {
-                        report.errors.Add($"Sheet {sheets[s]}: kỳ vọng {expectedFrames[s]} frames nhưng có {sprites.Length} frames.");
+                        report.errors.Add($"Strip {strip}: kỳ vọng 4 frames nhưng có {sprites.Length} frames.");
                     }
 
                     bool pivotValid = true;
-                    foreach (var sp in sprites)
+                    bool oneRowValid = true;
+
+                    for (int i = 0; i < sprites.Length; i++)
                     {
+                        var sp = sprites[i];
+                        // 1 hàng duy nhất: y phải bằng 0
+                        if (Mathf.Abs(sp.rect.y) > 0.01f)
+                        {
+                            oneRowValid = false;
+                        }
+
+                        // Frame width/height chuẩn 512x640
+                        if (Mathf.Abs(sp.rect.width - 512f) > 0.01f || Mathf.Abs(sp.rect.height - 640f) > 0.01f)
+                        {
+                            report.errors.Add($"Strip {strip} frame {sp.name} size {sp.rect.width}x{sp.rect.height} khác 512x640.");
+                        }
+
                         var normPivot = new Vector2(sp.pivot.x / sp.rect.width, sp.pivot.y / sp.rect.height);
                         if (Mathf.Abs(normPivot.x - 0.5f) > 0.01f || Mathf.Abs(normPivot.y - 0.1f) > 0.01f)
                         {
@@ -76,11 +87,16 @@ namespace PhoNho.Character.Editor
                         }
                     }
 
-                    report.sheetDetails.Add($"{sheets[s]}: {sprites.Length} frames (kỳ vọng {expectedFrames[s]}), size 512x640, pivot (0.5, 0.1) valid: {pivotValid}, PPU: 256");
+                    if (!oneRowValid)
+                    {
+                        report.errors.Add($"Strip {strip} vi phạm quy chuẩn 1 hàng ngang (phát hiện rect.y khác 0).");
+                    }
+
+                    report.stripDetails.Add($"{strip}: {sprites.Length} frames (kỳ vọng 4), 1-row valid: {oneRowValid}, frame size 512x640, pivot (0.5, 0.1) valid: {pivotValid}, PPU: 256");
                 }
                 report.totalSpritesCount = totalSprites;
 
-                // 2. Kiểm tra 4 Animation Clips
+                // 2. Kiểm tra 4 Animation Clips trỏ tới 1-row strips
                 string[] clips = new[]
                 {
                     "Assets/PhoNho/Art/Animations/Male_A_Idle.anim",
@@ -89,6 +105,13 @@ namespace PhoNho.Character.Editor
                     "Assets/PhoNho/Art/Animations/Female_A_Walk.anim"
                 };
                 int[] expectedFps = new[] { 2, 8, 2, 8 };
+                string[] expectedStripNames = new[]
+                {
+                    "Male_A_Idle_Strip",
+                    "Male_A_Movement_Strip",
+                    "Female_A_Idle_Strip",
+                    "Female_A_Movement_Strip"
+                };
 
                 for (int c = 0; c < clips.Length; c++)
                 {
@@ -101,12 +124,27 @@ namespace PhoNho.Character.Editor
                     var settings = AnimationUtility.GetAnimationClipSettings(clip);
                     var bindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
                     int keyframeCount = 0;
+                    bool referencesCorrectStrip = true;
+
                     if (bindings.Length > 0)
                     {
                         var keyframes = AnimationUtility.GetObjectReferenceCurve(clip, bindings[0]);
                         keyframeCount = keyframes != null ? keyframes.Length : 0;
+                        if (keyframes != null)
+                        {
+                            foreach (var kf in keyframes)
+                            {
+                                var sp = kf.value as Sprite;
+                                if (sp == null || !sp.name.StartsWith(expectedStripNames[c]))
+                                {
+                                    referencesCorrectStrip = false;
+                                    report.errors.Add($"Clip {clips[c]} keyframe tham chiếu sprite {sp?.name ?? "null"} không thuộc strip 1 hàng {expectedStripNames[c]}.");
+                                }
+                            }
+                        }
                     }
-                    report.clipDetails.Add($"{Path.GetFileName(clips[c])}: fps={clip.frameRate} (kỳ vọng {expectedFps[c]}), keyframes={keyframeCount}, loopTime={settings.loopTime}");
+
+                    report.clipDetails.Add($"{Path.GetFileName(clips[c])}: fps={clip.frameRate} (kỳ vọng {expectedFps[c]}), keyframes={keyframeCount}, loopTime={settings.loopTime}, stripRefValid={referencesCorrectStrip}");
                     if (Mathf.Abs(clip.frameRate - expectedFps[c]) > 0.1f)
                         report.errors.Add($"Clip {clips[c]}: fps {clip.frameRate} khác {expectedFps[c]}");
                     if (!settings.loopTime)
@@ -155,7 +193,7 @@ namespace PhoNho.Character.Editor
                     if (camGo != null)
                     {
                         var cam = camGo.GetComponent<Camera>();
-                        report.sceneValidation.Add($"Main Camera: orthographic={cam.orthographic}, size={cam.orthographicSize}, bgColor={cam.backgroundColor}");
+                        report.sceneValidation.Add($"Main Camera: orthographic={cam.orthographic}, size={cam.orthographicSize}");
                     }
                     else report.errors.Add("Thiếu Main Camera trong preview scene");
 
@@ -174,7 +212,9 @@ namespace PhoNho.Character.Editor
                         var sr = maleGo.GetComponent<SpriteRenderer>();
                         var anim = maleGo.GetComponent<Animator>();
                         var preview = maleGo.GetComponent<PhoNhoCharacterPreview>();
-                        report.sceneValidation.Add($"Male Preview Go: SpriteRenderer={(sr != null && sr.sprite != null)}, Animator={(anim != null && anim.runtimeAnimatorController != null)}, PhoNhoCharacterPreview={(preview != null)}");
+                        bool spriteFromStrip = sr != null && sr.sprite != null && sr.sprite.name.StartsWith("Male_A_Idle_Strip");
+                        report.sceneValidation.Add($"Male Preview Go: SpriteRenderer={(sr != null && sr.sprite != null)}, from1RowStrip={spriteFromStrip}, Animator={(anim != null && anim.runtimeAnimatorController != null)}, PhoNhoCharacterPreview={(preview != null)}");
+                        if (!spriteFromStrip) report.errors.Add("Male Preview SpriteRenderer không dùng sprite từ Male_A_Idle_Strip.");
                     }
                     else report.errors.Add("Thiếu Male_Character_Preview");
 
@@ -183,7 +223,9 @@ namespace PhoNho.Character.Editor
                         var sr = femaleGo.GetComponent<SpriteRenderer>();
                         var anim = femaleGo.GetComponent<Animator>();
                         var preview = femaleGo.GetComponent<PhoNhoCharacterPreview>();
-                        report.sceneValidation.Add($"Female Preview Go: SpriteRenderer={(sr != null && sr.sprite != null)}, Animator={(anim != null && anim.runtimeAnimatorController != null)}, PhoNhoCharacterPreview={(preview != null)}");
+                        bool spriteFromStrip = sr != null && sr.sprite != null && sr.sprite.name.StartsWith("Female_A_Idle_Strip");
+                        report.sceneValidation.Add($"Female Preview Go: SpriteRenderer={(sr != null && sr.sprite != null)}, from1RowStrip={spriteFromStrip}, Animator={(anim != null && anim.runtimeAnimatorController != null)}, PhoNhoCharacterPreview={(preview != null)}");
+                        if (!spriteFromStrip) report.errors.Add("Female Preview SpriteRenderer không dùng sprite từ Female_A_Idle_Strip.");
                     }
                     else report.errors.Add("Thiếu Female_Character_Preview");
                 }

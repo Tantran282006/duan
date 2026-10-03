@@ -7,13 +7,14 @@ using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PhoNho.Art.Editor;
 
 namespace PhoNho.Character.Editor
 {
     [InitializeOnLoad]
     public static class CharacterAnimationBuilder
     {
-        private const string PrefKey = "PhoNho_CharacterCleanup_Automation_Ran_V1";
+        private const string PrefKey = "PhoNho_CharacterCleanup_Automation_Ran_V2";
         private const string AnimDir = "Assets/PhoNho/Art/Animations";
         private const string ScenesDir = "Assets/PhoNho/Scenes";
         private const string CharDir = "Assets/PhoNho/Art/Characters";
@@ -35,53 +36,42 @@ namespace PhoNho.Character.Editor
         public static void ExecuteAll()
         {
             var logMessages = new List<string>();
-            logMessages.Add($"=== PHỐ NHỎ CHARACTER CLEANUP & ANIMATION AUTOMATION ===");
+            logMessages.Add($"=== PHỐ NHỎ CHARACTER CLEANUP & 1-ROW STRIP AUTOMATION ===");
             logMessages.Add($"Thời gian chạy: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
             try
             {
-                // 1. Chạy CleanAll từ CharacterSheetTools để xử lý và slice 6 sheet
+                // 1. Chạy CleanAll từ CharacterSheetTools
                 logMessages.Add("\n[BƯỚC 1] Chạy PhoNho.Art.Editor.CharacterSheetTools.CleanAll...");
-                PhoNho.Art.Editor.CharacterSheetTools.CleanAll();
+                CharacterSheetTools.CleanAll();
                 logMessages.Add("=> CleanAll hoàn tất thành công!");
 
-                // 2. Kiểm tra các sprite đã được slice trong 6 file
-                logMessages.Add("\n[BƯỚC 2] Kiểm tra 32 frame của 6 sheet:");
-                string[] targetSheets = new[]
+                // 2. Slice 4 sprite strip 1 hàng ngang (1x4, 2048x640)
+                logMessages.Add("\n[BƯỚC 2] Slice 4 horizontal sprite strip (1 hàng ngang):");
+                string[] stripFiles = new[]
                 {
-                    "Nhân vật nam đi bộ tám khung-1.png",
-                    "Chu kỳ đi bộ cô gái pastel-2.png",
-                    "Bộ sprite đi bộ bốn khung-3.png",
-                    "Bảng sprite đi bộ bốn khung-4.png",
-                    "Male_A_Idle.png",
-                    "Female_A_Idle.png"
+                    "Male_A_Idle_Strip.png",
+                    "Male_A_Movement_Strip.png",
+                    "Female_A_Idle_Strip.png",
+                    "Female_A_Movement_Strip.png"
                 };
 
-                int totalFrames = 0;
-                var sheetSprites = new Dictionary<string, Sprite[]>();
+                var stripSprites = new Dictionary<string, Sprite[]>();
 
-                foreach (string sheetName in targetSheets)
+                foreach (string strip in stripFiles)
                 {
-                    string assetPath = $"{CharDir}/{sheetName}";
+                    string assetPath = $"{CharDir}/{strip}";
+                    CharacterSheetTools.Slice(assetPath, 4, 1);
+                    AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+
                     Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(assetPath)
                         .OfType<Sprite>()
-                        .OrderBy(s => s.name, StringComparer.Ordinal)
+                        .OrderBy(s => s.rect.x)
                         .ToArray();
 
-                    sheetSprites[sheetName] = sprites;
-                    totalFrames += sprites.Length;
-                    logMessages.Add($" - {sheetName}: {sprites.Length} frames sliced.");
-
-                    foreach (var sp in sprites)
-                    {
-                        var pivotNormalized = new Vector2(sp.pivot.x / sp.rect.width, sp.pivot.y / sp.rect.height);
-                        if (Mathf.Abs(pivotNormalized.x - 0.5f) > 0.05f || Mathf.Abs(pivotNormalized.y - 0.1f) > 0.05f)
-                        {
-                            logMessages.Add($"   [Cảnh báo Pivot] {sp.name} pivot: {pivotNormalized}");
-                        }
-                    }
+                    stripSprites[strip] = sprites;
+                    logMessages.Add($" - {strip}: {sprites.Length} frames sliced (1 row x 4 cols, each 512x640).");
                 }
-                logMessages.Add($"=> Tổng số frame kiểm tra được: {totalFrames}/32");
 
                 // 3. Tạo thư mục Animations
                 if (!AssetDatabase.IsValidFolder(AnimDir))
@@ -90,22 +80,22 @@ namespace PhoNho.Character.Editor
                     AssetDatabase.Refresh();
                 }
 
-                // 4. Tạo Animation Clips
-                logMessages.Add("\n[BƯỚC 3] Tạo Animation Clips (Idle 2 FPS, Walk 8 FPS, Loop Time bật):");
+                // 4. Tạo Animation Clips từ 4 horizontal strips 1 hàng
+                logMessages.Add("\n[BƯỚC 3] Tạo Animation Clips từ 1-row strips (Idle 2 FPS, Walk 8 FPS, Loop Time bật):");
 
                 // Male clips
-                var maleIdleSprites = sheetSprites["Male_A_Idle.png"];
-                var maleWalkSprites = sheetSprites["Bộ sprite đi bộ bốn khung-3.png"];
+                var maleIdleSprites = stripSprites["Male_A_Idle_Strip.png"];
+                var maleWalkSprites = stripSprites["Male_A_Movement_Strip.png"];
                 AnimationClip maleIdleClip = CreateOrUpdateClip($"{AnimDir}/Male_A_Idle.anim", maleIdleSprites, 2);
                 AnimationClip maleWalkClip = CreateOrUpdateClip($"{AnimDir}/Male_A_Walk.anim", maleWalkSprites, 8);
-                logMessages.Add(" - Tạo thành công Male_A_Idle.anim (2 FPS) và Male_A_Walk.anim (8 FPS).");
+                logMessages.Add(" - Tạo thành công Male_A_Idle.anim (2 FPS, 1-row strip) và Male_A_Walk.anim (8 FPS, 1-row strip).");
 
                 // Female clips
-                var femaleIdleSprites = sheetSprites["Female_A_Idle.png"];
-                var femaleWalkSprites = sheetSprites["Bảng sprite đi bộ bốn khung-4.png"];
+                var femaleIdleSprites = stripSprites["Female_A_Idle_Strip.png"];
+                var femaleWalkSprites = stripSprites["Female_A_Movement_Strip.png"];
                 AnimationClip femaleIdleClip = CreateOrUpdateClip($"{AnimDir}/Female_A_Idle.anim", femaleIdleSprites, 2);
                 AnimationClip femaleWalkClip = CreateOrUpdateClip($"{AnimDir}/Female_A_Walk.anim", femaleWalkSprites, 8);
-                logMessages.Add(" - Tạo thành công Female_A_Idle.anim (2 FPS) và Female_A_Walk.anim (8 FPS).");
+                logMessages.Add(" - Tạo thành công Female_A_Idle.anim (2 FPS, 1-row strip) và Female_A_Walk.anim (8 FPS, 1-row strip).");
 
                 // 5. Tạo Animator Controllers
                 logMessages.Add("\n[BƯỚC 4] Tạo Animator Controllers:");
@@ -114,9 +104,9 @@ namespace PhoNho.Character.Editor
                 logMessages.Add(" - Tạo thành công Male_A_Controller.controller và Female_A_Controller.controller.");
 
                 // 6. Tạo Scene Preview riêng
-                logMessages.Add("\n[BƯỚC 5] Tạo Scene Preview riêng Assets/PhoNho/Scenes/Character_Preview.unity...");
+                logMessages.Add("\n[BƯỚC 5] Cập nhật Scene Preview riêng Assets/PhoNho/Scenes/Character_Preview.unity...");
                 BuildPreviewScene(maleController, femaleController, maleIdleSprites.FirstOrDefault(), femaleIdleSprites.FirstOrDefault());
-                logMessages.Add(" - Đã dựng Scene Preview với nền sáng và nền tối để kiểm tra quầng viền và độ ổn định của sprite!");
+                logMessages.Add(" - Đã dựng Scene Preview với nền sáng và nền tối sử dụng sprite từ 1-row horizontal strips!");
 
                 logMessages.Add("\n=== HOÀN TẤT THÀNH CÔNG ===");
             }
@@ -146,7 +136,6 @@ namespace PhoNho.Character.Editor
 
             clip.frameRate = fps;
 
-            // Bật Loop Time
             var settings = AnimationUtility.GetAnimationClipSettings(clip);
             settings.loopTime = true;
             AnimationUtility.SetAnimationClipSettings(clip, settings);
@@ -182,7 +171,6 @@ namespace PhoNho.Character.Editor
                 controller = AnimatorController.CreateAnimatorControllerAtPath(path);
             }
 
-            // Đảm bảo có parameters
             if (!controller.parameters.Any(p => p.name == "IsMoving"))
                 controller.AddParameter("IsMoving", AnimatorControllerParameterType.Bool);
             if (!controller.parameters.Any(p => p.name == "Speed"))
@@ -190,7 +178,6 @@ namespace PhoNho.Character.Editor
 
             var rootStateMachine = controller.layers[0].stateMachine;
 
-            // Xóa states cũ để dựng mới chuẩn
             var existingStates = rootStateMachine.states.Select(s => s.state).ToArray();
             foreach (var st in existingStates)
             {
@@ -205,13 +192,11 @@ namespace PhoNho.Character.Editor
 
             rootStateMachine.defaultState = idleState;
 
-            // Idle -> Walk
             var toWalk = idleState.AddTransition(walkState);
             toWalk.AddCondition(AnimatorConditionMode.If, 0, "IsMoving");
             toWalk.hasExitTime = false;
             toWalk.duration = 0.05f;
 
-            // Walk -> Idle
             var toIdle = walkState.AddTransition(idleState);
             toIdle.AddCondition(AnimatorConditionMode.IfNot, 0, "IsMoving");
             toIdle.hasExitTime = false;

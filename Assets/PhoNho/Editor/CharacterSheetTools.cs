@@ -99,7 +99,7 @@ namespace PhoNho.Art.Editor
             return output;
         }
 
-        private static void Slice(string path, int columns, int rows)
+        public static void Slice(string path, int columns, int rows)
         {
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Sprite; importer.spriteImportMode = SpriteImportMode.Multiple;

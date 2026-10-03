@@ -10,9 +10,9 @@
 - **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
 - **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
-- **Character**: Đã chạy `CharacterSheetTools.CleanAll` và nghiệm thu hoàn tất qua `CharacterPlayModeValidator.ValidateAll` trong Unity 6000.4.3f1 batchmode. Toàn bộ 6 sheet (32 frame) đã được slice chuẩn vào metadata (ô 512x640, baseline 576, pivot `0.5, 0.1`, 256 PPU). 4 AnimationClips (Walk 8 FPS, Idle 2 FPS, Loop Time), 2 AnimatorControllers và Scene `Character_Preview.unity` đã được xác nhận hợp lệ với controller `PhoNhoCharacterPreview.cs` (đi trái flipX, dừng giữ hướng cuối).
-- **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ về góc vẽ và quầng tóc/quần áo đặc trưng của ảnh AI gốc; sẵn sàng cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
-- **IDE bridge**: MCP stdio `phonho-task-bridge` đã kết nối thành công với Antigravity trên máy thực tế; đã claim và nghiệm thu hoàn tất task `character-cleanup-unity-check-001`.
+- **Character**: Đã chuẩn hóa toàn bộ 4 animation chính (Female Idle, Female Movement, Male Idle, Male Movement) thành các sprite strip 1 hàng ngang duy nhất (`1x4`, kích thước `2048 x 640 px`, mỗi frame 512x640, baseline 576, pivot `(0.5, 0.1)`, PPU 256). Giữ chuẩn trang phục giản dị (nữ áo kem + short hồng; nam áo kem + short olive). Toàn bộ Animation Clips, Animator Controllers và Scene Preview `Character_Preview.unity` đã được cập nhật trỏ sang các 1-row strips mới và nghiệm thu qua `CharacterPlayModeValidator.ValidateAll` trong Unity 6000.4.3f1 batchmode với 0 lỗi.
+- **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ góc nhìn/chi tiết tóc do ảnh gốc AI; đáp ứng tốt cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
+- **IDE bridge**: Hoàn thành nhận việc, thực thi và báo cáo kết quả qua MCP `phonho-task-bridge` cho các task `character-cleanup-unity-check-001`, `test-01` và `character-animation-simple-outfit-02`.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
@@ -65,6 +65,32 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 8 — 2026-10-04 (Chuẩn hóa Sprite Strip 1 Hàng Ngang & Hoàn thành Task Bridge)
+- **Mốc**: M0 (Character Animation 1-Row Strip Standardization & Task Completion).
+- **Đã làm**:
+  - Nhận và claim task `character-animation-simple-outfit-02` qua MCP `phonho-task-bridge` (revision 2).
+  - Chuẩn hóa toàn bộ 4 animation chính sang sprite strip 1 hàng ngang (1x4, kích thước `2048 x 640 px`):
+    - `Male_A_Idle_Strip.png` (nam áo kem/trắng, short olive, giày trắng, 4 frame ngang).
+    - `Male_A_Movement_Strip.png` (nam áo kem/trắng, short olive, giày trắng, 4 frame bước đi ngang).
+    - `Female_A_Idle_Strip.png` (nữ áo kem/trắng, short hồng pastel, giày trắng, 4 frame ngang).
+    - `Female_A_Movement_Strip.png` (nữ áo kem/trắng, short hồng pastel, giày trắng, 4 frame bước đi ngang).
+  - Làm sạch nền trong suốt, khóa baseline Y=576, pivot `(0.5, 0.1)`, 256 PPU cho từng ô 512×640 px.
+  - Cập nhật cấu hình slicing `CharacterSheets.json`, tool [CharacterSheetTools.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterSheetTools.cs), [CharacterAnimationBuilder.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterAnimationBuilder.cs).
+  - Cập nhật 4 Animation Clips (`Male_A_Idle`, `Male_A_Walk`, `Female_A_Idle`, `Female_A_Walk`) trỏ 100% vào các sprite từ 1-row strips mới; loại bỏ hoàn toàn việc tham chiếu bố cục 2 hàng cũ.
+  - Cập nhật Scene Preview [Character_Preview.unity](file:///d:/new/Assets/PhoNho/Scenes/Character_Preview.unity) với sprite mặc định từ strip 1 hàng.
+  - Chạy `CharacterPlayModeValidator.ValidateAll` qua Unity 6000.4.3f1 batchmode, xác nhận `success: true`, 0 lỗi, kiểm tra 4 strips x 4 frames đều có `rect.y == 0` (1 hàng ngang tuyệt đối).
+  - Gọi MCP `report_result` hoàn tất task `character-animation-simple-outfit-02` (revision 3).
+- **File chính**:
+  - `Assets/PhoNho/Art/Characters/*Strip.png` & `*.png.meta`
+  - `Assets/PhoNho/Art/Animations/*.anim` & `*.controller`
+  - [CharacterSheets.json](file:///d:/new/Assets/PhoNho/Editor/CharacterSheets.json)
+  - [CharacterAnimationBuilder.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterAnimationBuilder.cs)
+  - [CharacterPlayModeValidator.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterPlayModeValidator.cs)
+  - [character-validation-results.json](file:///d:/new/Assets/PhoNho/Editor/character-validation-results.json)
+  - [Character_Preview.unity](file:///d:/new/Assets/PhoNho/Scenes/Character_Preview.unity)
+  - [PROGRESS.md](file:///d:/new/PROGRESS.md)
+- **Kiểm tra**: Unity batchmode exit code 0; `character-validation-results.json` ghi nhận `success: true`, 4 one-row strips, 16 sprites, 0 lỗi.
 
 ### Phiên 7 — 2026-10-03 (Nghiệm thu Task Character Check qua MCP Task Bridge)
 - **Mốc**: M0 (Character Preview Play Mode Validation & MCP Bridge Integration).

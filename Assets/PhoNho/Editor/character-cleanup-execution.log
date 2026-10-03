@@ -1,26 +1,23 @@
-=== PHỐ NHỎ CHARACTER CLEANUP & ANIMATION AUTOMATION ===
-Thời gian chạy: 2026-10-03 22:59:39
+=== PHỐ NHỎ CHARACTER CLEANUP & 1-ROW STRIP AUTOMATION ===
+Thời gian chạy: 2026-10-04 00:29:41
 
 [BƯỚC 1] Chạy PhoNho.Art.Editor.CharacterSheetTools.CleanAll...
 => CleanAll hoàn tất thành công!
 
-[BƯỚC 2] Kiểm tra 32 frame của 6 sheet:
- - Nhân vật nam đi bộ tám khung-1.png: 8 frames sliced.
- - Chu kỳ đi bộ cô gái pastel-2.png: 8 frames sliced.
- - Bộ sprite đi bộ bốn khung-3.png: 4 frames sliced.
- - Bảng sprite đi bộ bốn khung-4.png: 4 frames sliced.
- - Male_A_Idle.png: 4 frames sliced.
- - Female_A_Idle.png: 4 frames sliced.
-=> Tổng số frame kiểm tra được: 32/32
+[BƯỚC 2] Slice 4 horizontal sprite strip (1 hàng ngang):
+ - Male_A_Idle_Strip.png: 4 frames sliced (1 row x 4 cols, each 512x640).
+ - Male_A_Movement_Strip.png: 4 frames sliced (1 row x 4 cols, each 512x640).
+ - Female_A_Idle_Strip.png: 4 frames sliced (1 row x 4 cols, each 512x640).
+ - Female_A_Movement_Strip.png: 4 frames sliced (1 row x 4 cols, each 512x640).
 
-[BƯỚC 3] Tạo Animation Clips (Idle 2 FPS, Walk 8 FPS, Loop Time bật):
- - Tạo thành công Male_A_Idle.anim (2 FPS) và Male_A_Walk.anim (8 FPS).
- - Tạo thành công Female_A_Idle.anim (2 FPS) và Female_A_Walk.anim (8 FPS).
+[BƯỚC 3] Tạo Animation Clips từ 1-row strips (Idle 2 FPS, Walk 8 FPS, Loop Time bật):
+ - Tạo thành công Male_A_Idle.anim (2 FPS, 1-row strip) và Male_A_Walk.anim (8 FPS, 1-row strip).
+ - Tạo thành công Female_A_Idle.anim (2 FPS, 1-row strip) và Female_A_Walk.anim (8 FPS, 1-row strip).
 
 [BƯỚC 4] Tạo Animator Controllers:
  - Tạo thành công Male_A_Controller.controller và Female_A_Controller.controller.
 
-[BƯỚC 5] Tạo Scene Preview riêng Assets/PhoNho/Scenes/Character_Preview.unity...
- - Đã dựng Scene Preview với nền sáng và nền tối để kiểm tra quầng viền và độ ổn định của sprite!
+[BƯỚC 5] Cập nhật Scene Preview riêng Assets/PhoNho/Scenes/Character_Preview.unity...
+ - Đã dựng Scene Preview với nền sáng và nền tối sử dụng sprite từ 1-row horizontal strips!
 
 === HOÀN TẤT THÀNH CÔNG ===
