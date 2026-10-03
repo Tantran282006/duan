@@ -10,15 +10,15 @@
 - **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
 - **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
-- **Character**: đã làm sạch/căn 6 sheet (32 frame), thêm Male_A_Idle/Female_A_Idle, nguồn giữ tại `img/character`; công cụ Editor dùng chung và hướng dẫn `docs/CHARACTER_CLEANUP.md` đã có. PNG/frame đã kiểm tra; chưa compile hoặc chạy công cụ trong Unity.
+- **Character**: Đã chạy `CharacterSheetTools.CleanAll` thành công qua Unity 6000.4.3f1 batchmode; toàn bộ 6 sheet (32 frame) đã được slice chuẩn vào metadata (ô 512x640, baseline 576, pivot `0.5, 0.1`, 256 PPU). Đã tạo 4 AnimationClips (Walk 8 FPS, Idle 2 FPS, Loop Time), 2 AnimatorControllers và Scene `Character_Preview.unity` kiểm tra trên nền sáng/tối với controller `PhoNhoCharacterPreview.cs` (đi trái flipX, dừng giữ hướng cuối).
+- **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ về góc vẽ và quầng tóc/quần áo đặc trưng của ảnh AI gốc; sẵn sàng cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. M0: compile Unity, chạy `Phố Nhỏ > Character > Làm sạch và căn toàn bộ`; kiểm tra 32 frame/pivot trên nền sáng và tối.
-2. M0: nối Walk/Idle vào Animator hiện có; kiểm tra hướng trái/phải, tư thế gốc còn lệch và ảnh cũ có frame lặp.
-3. M0: kiểm tra `Assets/unity.unity` Full HD 16:9 và di chuyển Main Camera theo X để kiểm tra parallax.
-4. M0: hoàn thiện URP 2D, Addressables và Localization.
-5. M0: dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+1. M0: Mở scene `Assets/PhoNho/Scenes/Character_Preview.unity` chạy thử Play Mode kiểm tra chuyển động Walk/Idle của Nam & Nữ.
+2. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế.
+3. M0: Hoàn thiện URP 2D, Addressables và Localization.
+4. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -64,6 +64,25 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 5 — 2026-10-03 (Hoàn tất Slicing Sprite, Animation Clips & Scene Preview Character)
+- **Mốc**: M0 (Character Cleanup & Animation Integration).
+- **Đã làm**:
+  - Chạy thành công `PhoNho.Art.Editor.CharacterSheetTools.CleanAll` thông qua Unity 6000.4.3f1 batchmode CLI (`-executeMethod`).
+  - Kiểm tra và tự động cập nhật metadata slice cho toàn bộ 6 sheet (32/32 frame): ô 512×640 px, baseline 576, pivot `(0.5, 0.1)`, 256 PPU.
+  - Tạo 4 Animation Clips chuẩn theo đặc tả: `Male_A_Idle.anim` (2 FPS), `Male_A_Walk.anim` (8 FPS), `Female_A_Idle.anim` (2 FPS), `Female_A_Walk.anim` (8 FPS); đã bật `loopTime = true`.
+  - Tạo 2 Animator Controllers (`Male_A_Controller.controller`, `Female_A_Controller.controller`) với state machine `Idle` và `Walk`, chuyển trạng thái bằng tham số `IsMoving` / `Speed`.
+  - Viết controller điều khiển preview [PhoNhoCharacterPreview.cs](file:///d:/new/Assets/PhoNho/Scripts/Character/PhoNhoCharacterPreview.cs) hỗ trợ đi tuần tra mẫu, phím bấm, rẽ trái dùng `flipX = true`, dừng lại giữ nguyên hướng nhìn cuối.
+  - Tạo Scene riêng [Character_Preview.unity](file:///d:/new/Assets/PhoNho/Scenes/Character_Preview.unity) với panel nền sáng (`#F2F2EB`) và nền tối (`#1F1F24`) cùng đường ground line để kiểm tra trực quan quầng viền, giày và kích thước.
+  - Tự động ghi nhật ký chi tiết tại [character-cleanup-execution.log](file:///d:/new/Assets/PhoNho/Editor/character-cleanup-execution.log).
+- **File chính**:
+  - `Assets/PhoNho/Art/Animations/*.anim` & `*.controller`
+  - [Character_Preview.unity](file:///d:/new/Assets/PhoNho/Scenes/Character_Preview.unity)
+  - [PhoNhoCharacterPreview.cs](file:///d:/new/Assets/PhoNho/Scripts/Character/PhoNhoCharacterPreview.cs)
+  - [CharacterAnimationBuilder.cs](file:///d:/new/Assets/PhoNho/Editor/CharacterAnimationBuilder.cs)
+  - `Assets/PhoNho/Art/Characters/*.png.meta`
+- **Cách chạy/kiểm tra**: Mở Unity, mở scene `Assets/PhoNho/Scenes/Character_Preview.unity`, bấm Play để xem nhân vật tự tuần tra chuyển đổi giữa Walk và Idle.
+- **Lỗi / Nợ kỹ thuật**: Sprite AI có độ biến thiên nhẹ giữa các góc nhìn; chuẩn bị quy trình chuyển đổi sang Spine rig 2D theo D25.
 
 ### Phiên 4 — 2026-10-03
 - **Mốc**: M0 (Character cleanup).
