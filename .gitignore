@@ -53,3 +53,8 @@ sysinfo.txt
 ehthumbs.db
 Thumbs.db
 [Dd]esktop.ini
+
+# Local IDE task bridge: private credentials/config and runtime queue
+.ide-bridge/
+.tasks/runtime/
+

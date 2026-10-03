@@ -13,12 +13,15 @@
 - **Character**: Đã chạy `CharacterSheetTools.CleanAll` thành công qua Unity 6000.4.3f1 batchmode; toàn bộ 6 sheet (32 frame) đã được slice chuẩn vào metadata (ô 512x640, baseline 576, pivot `0.5, 0.1`, 256 PPU). Đã tạo 4 AnimationClips (Walk 8 FPS, Idle 2 FPS, Loop Time), 2 AnimatorControllers và Scene `Character_Preview.unity` kiểm tra trên nền sáng/tối với controller `PhoNhoCharacterPreview.cs` (đi trái flipX, dừng giữ hướng cuối).
 - **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ về góc vẽ và quầng tóc/quần áo đặc trưng của ảnh AI gốc; sẵn sàng cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
 
+- **IDE bridge**: REST Actions + MCP stdio + task Markdown, Node >=22 không cần dependency; 6 kiểm tra cục bộ qua. Chưa kích hoạt trên máy người dùng/tunnel/Custom GPT thật.
+
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. M0: Mở scene `Assets/PhoNho/Scenes/Character_Preview.unity` chạy thử Play Mode kiểm tra chuyển động Walk/Idle của Nam & Nữ.
-2. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế.
-3. M0: Hoàn thiện URP 2D, Addressables và Localization.
-4. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+1. Cài bridge theo docs/IDE_BRIDGE.md; xác nhận MCP và Actions health trên máy, gửi task Character kiểm tra Play Mode.
+2. M0: Mở scene `Assets/PhoNho/Scenes/Character_Preview.unity` chạy thử Play Mode kiểm tra chuyển động Walk/Idle của Nam & Nữ.
+3. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế.
+4. M0: Hoàn thiện URP 2D, Addressables và Localization.
+5. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -57,6 +60,7 @@
 | D31 | Kiểm duyệt UGC giai đoạn đầu: tập trung nút Báo cáo đánh giá sai cho chủ quán | CHỐT |
 | D32 | Điều kiện cụ thể để mở đổi nghề: để dành khi bắt đầu phát triển bản cập nhật tương lai | CHỐT |
 | D33 | Nhân vật nam/nữ trang phục A (áo kem, short xanh/hồng); sprite sheet hiện dùng để thử art, không thay quyết định Spine D25. Nguồn trong img/character, đầu ra căn theo ô 512×640/pivot chân. | CHỐT (A) / GIẢ ĐỊNH (quy chuẩn kỹ thuật) |
+| D34 | Cầu nối giao việc dùng REST Action + MCP stdio, Node >=22 và thư viện built-in (không thêm dependency); webhook chỉ lưu task, IDE agent thực thi theo quyền riêng. | TRIỂN KHAI / CHƯA KÍCH HOẠT Ở MÁY NGƯỜI DÙNG |
 
 ## OPEN QUESTIONS (cần người dùng trả lời)
 
@@ -64,6 +68,14 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 6 — 2026-10-03
+- **Mốc**: công cụ giao việc ChatGPT ↔ Antigravity cho M0.
+- **Đã làm**: REST webhook có hai vai trò/token, queue JSON/Markdown, retry cùng ID, khóa claim/revision; MCP stdio list/get/claim/report; setup sinh schema và cấu hình theo máy.
+- **File chính**: tools/ide-bridge/*, .tasks/character-check.json, .tasks/current-task.md, docs/IDE_BRIDGE.md, docs/GPT_BRIDGE_INSTRUCTIONS.md, .gitignore.
+- **Kiểm tra**: 6 Node tests qua, gồm luồng REST → tiến trình MCP thật → REST, xác thực/giới hạn request/role, claim đồng thời, retry, symlink và setup giữ token.
+- **Cách chạy**: node tools/ide-bridge/setup.mjs; ghép config vào Antigravity; tùy chọn ngrok + Custom GPT Actions theo docs.
+- **Nợ kỹ thuật**: chưa chạy tunnel/Custom GPT/Antigravity thật ở máy người dùng; phiên bridge không chạy Unity; gửi task không tự đánh thức agent.
 
 ### Phiên 5 — 2026-10-03 (Hoàn tất Slicing Sprite, Animation Clips & Scene Preview Character)
 - **Mốc**: M0 (Character Cleanup & Animation Integration).
@@ -147,4 +159,4 @@
 - **File chính**: path1, path2
 - **Cách chạy/kiểm tra**: ...
 - **Lỗi / nợ kỹ thuật**: ...
---> 
+-->

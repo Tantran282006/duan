@@ -1,0 +1,21 @@
+{
+  "id": "character-cleanup-unity-check-001",
+  "title": "Kiểm tra Character Preview trong Play Mode",
+  "goal": "Xác nhận công cụ Character chạy được trong Unity 6000.4.3f1 và 6 sheet/32 frame được import, căn chân và dùng làm preview đúng.",
+  "files": ["AGENTS.md", "PROGRESS.md", "docs/CHARACTER_CLEANUP.md", "Assets/PhoNho/Scenes/Character_Preview.unity", "Assets/PhoNho/Scripts/Character/PhoNhoCharacterPreview.cs", "Assets/PhoNho/Editor/CharacterSheetTools.cs", "Assets/PhoNho/Editor/CharacterAnimationBuilder.cs", "Assets/PhoNho/Editor/CharacterSheets.json"],
+  "steps": [
+    "Đọc AGENTS.md, PROGRESS.md và docs/CHARACTER_CLEANUP.md.",
+    "Compile trong Unity; sửa lỗi của các file Character nếu có, giữ phạm vi module này.",
+    "Theo PROGRESS.md đã chạy cleanup/slicing batchmode và tạo clip/controller; kiểm tra metadata hiện có, không tạo lại nếu không phát hiện lỗi.",
+    "Mở Assets/PhoNho/Scenes/Character_Preview.unity, chạy Play Mode và kiểm tra 32 frame trên nền sáng/tối; thử Walk/Idle tự tuần tra và manual input theo controller hiện có.",
+    "Kiểm tra đi trái flipX, đi phải bình thường và dừng giữ hướng cuối; ghi lại lỗi Console/kiểm tra thực tế. Chỉ sửa module Character nếu cần.",
+    "Cập nhật PROGRESS.md với kiểm tra thực tế; không thay scene phố, controller mạng hoặc kinh tế.",
+    "Báo done nếu đủ tiêu chí, hoặc blocked kèm lỗi và kiểm tra chưa thực hiện."
+  ],
+  "acceptance_criteria": [
+    "Unity compile/Play Mode thành công, không lỗi Console trong preview; metadata importer/slicing không báo lỗi.",
+    "Có 6 sheet/32 frame đúng thứ tự, chân không bị cắt, pivot ổn định, không thấy quầng nền trên nền sáng/tối.",
+    "Nam và Nữ chuyển Walk/Idle, đi trái/phải và dừng giữ hướng đúng trong scene preview; ghi rõ hạn chế góc nhìn/tư thế/quầng ảnh AI còn lại, không gọi bộ ảnh là Spine rig.",
+    "PROGRESS.md có kết quả thật, file thay đổi và phần còn thiếu."
+  ]
+}
