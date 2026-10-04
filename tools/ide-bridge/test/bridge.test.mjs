@@ -52,7 +52,12 @@ test('separate store instances cannot claim the same task; result ownership/revi
 test('queue symlinks cannot write outside project', async t => {
   const { root, store } = await fixture(t);
   const outside = path.join(root, 'outside.json'); await fs.writeFile(outside, 'untouched');
-  await fs.symlink(outside, path.join(root, '.tasks/runtime/evil.json'));
+  try {
+    await fs.symlink(outside, path.join(root, '.tasks/runtime/evil.json'));
+  } catch (e) {
+    if (e.code === 'EPERM') return t.skip('Symlinks require privileges on Windows');
+    throw e;
+  }
   await assert.rejects(store.submit(task('evil')), e => e.status === 409);
   assert.equal(await fs.readFile(outside, 'utf8'), 'untouched');
 });

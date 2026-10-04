@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phố Nhỏ — Developer Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-box">
+          <span class="logo-icon">🏮</span>
+          <div class="logo-text">
+            <h2>Phố Nhỏ</h2>
+            <span class="badge-sub">Dev Dashboard</span>
+          </div>
+        </div>
+        <button class="btn-icon" id="btn-toggle-sidebar" title="Thu gọn sidebar" aria-label="Thu gọn sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="overview" id="nav-overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Tổng quan</span>
+        </button>
+        <button class="nav-item" data-tab="plan" id="nav-plan">
+          <span class="nav-icon">📋</span>
+          <span class="nav-label">Kế hoạch</span>
+          <span class="nav-badge" id="badge-plan-count">0</span>
+        </button>
+        <button class="nav-item" data-tab="done" id="nav-done">
+          <span class="nav-icon">✅</span>
+          <span class="nav-label">Đã làm</span>
+          <span class="nav-badge done-badge" id="badge-done-count">0</span>
+        </button>
+        <button class="nav-item" data-tab="accounts" id="nav-accounts">
+          <span class="nav-icon">🔑</span>
+          <span class="nav-label">Tài khoản IDE</span>
+          <span class="nav-badge pulse-badge" id="badge-active-acc">1</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="bridge-status-pill">
+          <span class="status-dot online"></span>
+          <div class="bridge-info">
+            <span class="bridge-title">Bridge Cloud</span>
+            <span class="bridge-url">game.zcloudviet.xyz</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h1 class="page-title" id="page-title">Tổng quan dự án</h1>
+          <div class="milestone-chip" id="chip-milestone">Mốc: M0</div>
+        </div>
+
+        <div class="header-right">
+          <button class="btn-secondary" id="btn-refresh" title="Làm mới dữ liệu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Đồng bộ</span>
+          </button>
+
+          <div class="active-profile-pill" id="header-profile-pill" title="Tài khoản Antigravity đang kích hoạt">
+            <span class="profile-avatar">👨‍💻</span>
+            <div class="profile-details">
+              <span class="profile-name" id="hdr-profile-name">Tan FL</span>
+              <span class="profile-quota" id="hdr-profile-quota">Quota: 85%</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: TỔNG QUAN -->
+      <section class="tab-panel active" id="tab-overview">
+        <!-- Progress Hero -->
+        <div class="progress-hero-card">
+          <div class="hero-left">
+            <span class="hero-eyebrow">TIẾN ĐỘ TỔNG THỂ</span>
+            <h2 class="hero-title">Khởi tạo & Hoàn thiện Asset Phố Nhỏ</h2>
+            <p class="hero-desc">Đang ở mốc <strong>M0</strong>. Đã chuẩn hóa Animation nhân vật 1 hàng ngang, Bridge Live 24/7 và cảnh quan phố đi bộ.</p>
+            
+            <div class="hero-sources">
+              <span class="source-tag">📄 PROGRESS.md</span>
+              <span class="source-tag">☁️ Cloud Bridge</span>
+              <span class="source-tag">💻 Local Runtime</span>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="radial-progress-box">
+              <div class="radial-progress" id="hero-progress-ring">
+                <span class="progress-num" id="hero-percent-text">88%</span>
+                <span class="progress-sub">Hoàn thành M0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card in-progress">
+            <div class="metric-icon">⚡</div>
+            <div class="metric-body">
+              <span class="metric-label">Đang thực hiện</span>
+              <span class="metric-val" id="metric-inprogress">1</span>
+            </div>
+            <span class="metric-sub">Task active</span>
+          </div>
+
+          <div class="metric-card pending">
+            <div class="metric-icon">⏳</div>
+            <div class="metric-body">
+              <span class="metric-label">Chờ xử lý</span>
+              <span class="metric-val" id="metric-pending">0</span>
+            </div>
+            <span class="metric-sub">Pending queue</span>
+          </div>
+
+          <div class="metric-card blocked">
+            <div class="metric-icon">🛑</div>
+            <div class="metric-body">
+              <span class="metric-label">Bị chặn / Nợ</span>
+              <span class="metric-val" id="metric-blocked">0</span>
+            </div>
+            <span class="metric-sub">Cần gỡ vướng</span>
+          </div>
+
+          <div class="metric-card done">
+            <div class="metric-icon">🏆</div>
+            <div class="metric-body">
+              <span class="metric-label">Đã hoàn thành</span>
+              <span class="metric-val" id="metric-done">12</span>
+            </div>
+            <span class="metric-sub">Phiên hoàn tất</span>
+          </div>
+        </div>
+
+        <!-- Two Column Layout: Milestone Roadmap & Recent Activity -->
+        <div class="overview-split">
+          <!-- Milestones Stepper -->
+          <div class="card card-milestones">
+            <div class="card-header">
+              <h3>🗺️ Lộ trình mốc phát triển</h3>
+              <span class="badge-status current">M0 Đang chạy</span>
+            </div>
+            <div class="milestones-stepper">
+              <div class="step-item completed">
+                <div class="step-marker">✓</div>
+                <div class="step-content">
+                  <h4>M0: Thiết lập & Asset cơ bản</h4>
+                  <p>Chuẩn hóa sprite, layout phố, Parallax, Bridge live ZCloudViet.</p>
+                </div>
+              </div>
+
+              <div class="step-item current">
+                <div class="step-marker">●</div>
+                <div class="step-content">
+                  <h4>M0.5: Nhân vật vào Scene & Web Dashboard</h4>
+                  <p>Đưa nhân vật vào scene phố đi bộ, Dashboard quản lý tiến độ & profile.</p>
+                </div>
+              </div>
+
+              <div class="step-item upcoming">
+                <div class="step-marker">○</div>
+                <div class="step-content">
+                  <h4>M1: Backend Nakama & Ledger</h4>
+                  <p>Dựng Nakama Docker local, PostgreSQL, RPC giao dịch tiền tệ có ledger.</p>
+                </div>
+              </div>
+
+              <div class="step-item upcoming">
+                <div class="step-marker">○</div>
+                <div class="step-content">
+                  <h4>M2: Gameplay nghề & Đơn hàng</h4>
+                  <p>Trà sữa, Đồ ăn sáng, Đánh giá đơn hàng, Sao & Michelin.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity from PROGRESS.md -->
+          <div class="card card-activity">
+            <div class="card-header">
+              <h3>🕒 Hoạt động gần đây (PROGRESS.md)</h3>
+              <button class="btn-text" id="btn-view-all-done">Xem tất cả →</button>
+            </div>
+            <div class="activity-feed" id="recent-activity-feed">
+              <div class="skeleton-loader">Đang nạp nhật ký...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: KẾ HOẠCH -->
+      <section class="tab-panel" id="tab-plan">
+        <div class="tab-controls-bar">
+          <div class="search-box">
+            <input type="text" id="plan-search" placeholder="Tìm kiếm task theo tên, ID, file..." />
+          </div>
+
+          <div class="view-switch-group">
+            <button class="btn-toggle active" id="btn-view-kanban" title="Dạng Kanban">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+              <span>Kanban</span>
+            </button>
+            <button class="btn-toggle" id="btn-view-table" title="Dạng Bảng">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+              <span>Bảng</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Kanban View -->
+        <div class="kanban-board" id="kanban-container">
+          <div class="kanban-col" data-status="pending">
+            <div class="col-header">
+              <span class="col-title">⏳ Chờ nhận (Pending)</span>
+              <span class="col-count" id="count-kanban-pending">0</span>
+            </div>
+            <div class="col-cards" id="cards-pending"></div>
+          </div>
+
+          <div class="kanban-col" data-status="in_progress">
+            <div class="col-header">
+              <span class="col-title">⚡ Đang làm (In Progress)</span>
+              <span class="col-count" id="count-kanban-inprogress">0</span>
+            </div>
+            <div class="col-cards" id="cards-in_progress"></div>
+          </div>
+
+          <div class="kanban-col" data-status="blocked">
+            <div class="col-header">
+              <span class="col-title">🛑 Bị chặn (Blocked)</span>
+              <span class="col-count" id="count-kanban-blocked">0</span>
+            </div>
+            <div class="col-cards" id="cards-blocked"></div>
+          </div>
+
+          <div class="kanban-col" data-status="done">
+            <div class="col-header">
+              <span class="col-title">✅ Hoàn thành (Done)</span>
+              <span class="col-count" id="count-kanban-done">0</span>
+            </div>
+            <div class="col-cards" id="cards-done"></div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-container hidden" id="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Task ID</th>
+                <th>Tiêu đề</th>
+                <th>Trạng thái</th>
+                <th>Worker</th>
+                <th>Rev</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="table-tasks-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: ĐÃ LÀM (DONE LOG) -->
+      <section class="tab-panel" id="tab-done">
+        <div class="tab-controls-bar">
+          <div class="search-box">
+            <input type="text" id="done-search" placeholder="Lọc theo phiên, file, kết quả, SHA..." />
+          </div>
+        </div>
+
+        <div class="done-log-list" id="done-log-container">
+          <div class="skeleton-loader">Đang nạp lịch sử hoàn thành...</div>
+        </div>
+      </section>
+
+      <!-- TAB 4: TÀI KHOẢN IDE (ANTIGRAVITY) -->
+      <section class="tab-panel" id="tab-accounts">
+        <!-- Account Switch Suggestion Callout (Displayed when bridge detects quota error) -->
+        <div class="warning-callout quota-exhausted-callout hidden" id="suggested-switch-box">
+          <span class="warn-icon">🛑</span>
+          <div class="warn-text">
+            <strong>Gợi ý chuyển đổi Profile (Phát hiện lỗi Quota/429):</strong>
+            <span id="suggested-switch-reason">Tài khoản chính đã hết token.</span>
+          </div>
+          <button class="btn-primary" id="btn-accept-suggested-switch" style="white-space:nowrap;margin-left:auto;">
+            Chuyển ngay
+          </button>
+          <button class="btn-text" id="btn-dismiss-suggested-switch" style="color:var(--text-sub);">
+            Bỏ qua
+          </button>
+        </div>
+
+        <!-- Account Alert Banner -->
+        <div class="account-active-banner">
+          <div class="banner-left">
+            <span class="banner-tag">PROFILE HIỆN TẠI</span>
+            <h2 id="banner-profile-name">Tài khoản chính (Tan FL)</h2>
+            <div class="banner-meta">
+              <span id="banner-profile-email">tan***@gmail.com</span>
+              <span class="badge-source" id="banner-quota-source">Nguồn: chưa rõ</span>
+              <span class="badge-status-ok" id="banner-profile-status">Hoạt động</span>
+              <span class="badge-stale hidden" id="banner-quota-stale" title="Dữ liệu chưa cập nhật > 30 phút">⚠️ Số liệu cũ (&gt;30p)</span>
+            </div>
+            <div class="banner-submeta" style="margin-top:6px;font-size:11px;color:var(--text-sub);">
+              <span id="banner-turns-count">Ước tính theo lượt: 0 lượt / 5h</span>
+              <span class="separator">•</span>
+              <span id="banner-quota-updated">Cập nhật: chưa rõ</span>
+            </div>
+          </div>
+
+          <div class="banner-middle">
+            <div class="quota-stat">
+              <div class="quota-label-row">
+                <span>Quota khả dụng:</span>
+                <strong id="banner-quota-val">chưa rõ</strong>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="banner-quota-fill" style="width: 0%;"></div>
+              </div>
+              
+              <!-- Quick manual adjustment for active profile -->
+              <div class="manual-quota-controls" style="margin-top:8px;display:flex;align-items:center;gap:6px;">
+                <span style="font-size:11px;color:var(--text-sub);">Nhập tay:</span>
+                <button class="btn-mini btn-delta" data-id="active" data-delta="-5">-5%</button>
+                <input type="number" id="active-quota-input" min="0" max="100" placeholder="%" style="width:48px;padding:2px 4px;font-size:11px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);text-align:center;" />
+                <button class="btn-mini btn-delta" data-id="active" data-delta="5">+5%</button>
+                <button class="btn-mini btn-primary" id="btn-save-active-quota" style="font-size:11px;padding:2px 8px;">Lưu</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="banner-right">
+            <button class="btn-primary highlight-btn" id="btn-quick-switch-next">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <span>Chuyển sang Acc tiếp theo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stale Data Reminder Alert -->
+        <div class="stale-alert-callout hidden" id="stale-warning-box">
+          <span class="warn-icon">🕒</span>
+          <div class="warn-text">
+            <strong>Nhắc nhở cập nhật:</strong>
+            <span>Số liệu quota của một hoặc nhiều profile đã quá 30 phút chưa được cập nhật. Bạn có thể bấm nút +/- hoặc nhập % còn lại vào ô Nhập tay.</span>
+          </div>
+        </div>
+
+        <!-- Quota Low Warning (Hidden by default) -->
+        <div class="warning-callout hidden" id="quota-warning-box">
+          <span class="warn-icon">⚠️</span>
+          <div class="warn-text">
+            <strong>Cảnh báo Quota thấp (&lt; 10%):</strong>
+            <span>Tài khoản hiện tại sắp hết token. Hãy cân nhắc lưu công việc và bấm chuyển sang profile dự phòng.</span>
+          </div>
+        </div>
+
+        <!-- Account Section Header -->
+        <div class="section-action-header">
+          <div>
+            <h3>Danh sách Profiles Antigravity cục bộ</h3>
+            <p class="section-sub">Quản lý các tài khoản chính chủ độc lập với user-data riêng. An toàn 100% trên 127.0.0.1.</p>
+          </div>
+          <button class="btn-secondary" id="btn-open-add-profile">
+            <span>+ Thêm Profile</span>
+          </button>
+        </div>
+
+        <!-- Profile Cards Grid -->
+        <div class="profile-cards-grid" id="profile-cards-container">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Switch Audit History -->
+        <div class="card card-audit">
+          <div class="card-header">
+            <h3>📜 Lịch sử chuyển đổi Profile (Audit Log)</h3>
+          </div>
+          <div class="audit-table-box">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Từ Profile</th>
+                  <th>Sang Profile</th>
+                  <th>Lý do</th>
+                </tr>
+              </thead>
+              <tbody id="audit-history-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Global Footer -->
+      <footer class="app-footer">
+        <div class="footer-left">
+          <span>Đồng bộ: <strong id="footer-sync-source">PROGRESS.md + Runtime</strong></span>
+          <span class="separator">•</span>
+          <span>Cập nhật lúc: <span id="footer-last-updated">Vừa xong</span></span>
+        </div>
+        <div class="footer-right">
+          <span class="security-badge">🔒 Local-only 127.0.0.1:5050</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Task Detail Drawer -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <aside class="drawer" id="task-drawer">
+    <div class="drawer-header">
+      <div>
+        <span class="drawer-tag" id="drawer-task-id">TASK-ID</span>
+        <h3 id="drawer-task-title">Tiêu đề task</h3>
+      </div>
+      <button class="btn-icon" id="btn-close-drawer">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-section">
+        <h4>Trạng thái</h4>
+        <div class="drawer-badges">
+          <span class="status-pill" id="drawer-status-pill">pending</span>
+          <span class="worker-pill" id="drawer-worker-pill">Worker: none</span>
+          <span class="rev-pill" id="drawer-rev-pill">Rev: 1</span>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <h4>🎯 Mục tiêu</h4>
+        <p class="drawer-text" id="drawer-task-goal"></p>
+      </div>
+
+      <div class="drawer-section">
+        <h4>📁 File liên quan</h4>
+        <ul class="file-list" id="drawer-task-files"></ul>
+      </div>
+
+      <div class="drawer-section">
+        <h4>📋 Các bước thực hiện</h4>
+        <ol class="steps-list" id="drawer-task-steps"></ol>
+      </div>
+
+      <div class="drawer-section">
+        <h4>✅ Tiêu chí hoàn thành (Acceptance Criteria)</h4>
+        <ul class="criteria-list" id="drawer-task-criteria"></ul>
+      </div>
+
+      <div class="drawer-section" id="drawer-result-section">
+        <h4>📊 Kết quả báo cáo (report_result)</h4>
+        <div class="code-box" id="drawer-task-result"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Profile Switch Confirmation Modal -->
+  <div class="modal-backdrop hidden" id="switch-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-icon">⚠️</span>
+        <h3>Xác nhận chuyển đổi Profile Antigravity</h3>
+      </div>
+      <div class="modal-body">
+        <p>Bạn sắp chuyển phiên làm việc sang profile: <strong id="modal-target-profile-name">Acc Dự Phòng</strong></p>
+        
+        <div class="in-progress-alert hidden" id="modal-task-warning">
+          <strong>Lưu ý quan trọng:</strong>
+          <p>Hiện có task đang ở trạng thái <code>in_progress</code>. Hãy đảm bảo bạn đã lưu file code, commit git và báo cáo tiến độ. Sau khi đổi profile, agent mới sẽ cần claim lại task bằng Worker ID mới!</p>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-switch-reason">Lý do chuyển đổi:</label>
+          <input type="text" id="modal-switch-reason" value="Chuyển đổi làm việc" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-switch">Hủy bỏ</button>
+        <button class="btn-primary" id="btn-confirm-switch">Xác nhận chuyển</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="mobile-nav">
+    <button class="mob-item active" data-tab="overview">
+      <span>📊</span>
+      <span>Tổng quan</span>
+    </button>
+    <button class="mob-item" data-tab="plan">
+      <span>📋</span>
+      <span>Kế hoạch</span>
+    </button>
+    <button class="mob-item" data-tab="done">
+      <span>✅</span>
+      <span>Đã làm</span>
+    </button>
+    <button class="mob-item" data-tab="accounts">
+      <span>🔑</span>
+      <span>Tài khoản</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>

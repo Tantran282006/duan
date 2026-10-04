@@ -6,13 +6,30 @@ import { projectRoot } from './store.mjs';
 export function argumentsFor(argv = process.argv.slice(2)) {
   const result = {};
   for (let i = 0; i < argv.length; i += 2) {
-    if (!['--root', '--url', '--file'].includes(argv[i]) || !argv[i + 1]) throw new Error('Use --root PATH, --url HTTPS_URL, or --file JSON_FILE');
-    result[argv[i].slice(2)] = argv[i + 1];
+    if (['--root', '--url', '--file'].includes(argv[i]) && argv[i + 1]) {
+      result[argv[i].slice(2)] = argv[i + 1];
+    } else if (process.env.NODE_ENV !== 'production' && !process.env.PORT && !['--root', '--url', '--file'].includes(argv[i])) {
+      throw new Error('Use --root PATH, --url HTTPS_URL, or --file JSON_FILE');
+    }
   }
   return result;
 }
 export const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const rootFor = async args => projectRoot(args.root ?? defaultRoot);
+export const rootFor = async args => {
+  if (args.root) return projectRoot(args.root);
+  if (process.env.PROJECT_ROOT) return projectRoot(process.env.PROJECT_ROOT);
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const twoUp = path.resolve(here, '../..');
+  // Check if we are inside tools/ide-bridge in the local monorepo
+  if (path.basename(here) === 'ide-bridge' && path.basename(path.resolve(here, '..')) === 'tools') {
+    try {
+      await fs.access(path.join(twoUp, 'AGENTS.md'));
+      return await projectRoot(twoUp);
+    } catch {}
+  }
+  // Otherwise we are running standalone (e.g. deployed container)
+  return await projectRoot(here);
+};
 export async function readEnvironment(root) {
   let file = '';
   try { file = await fs.readFile(path.join(root, '.ide-bridge', 'secrets.env'), 'utf8'); }

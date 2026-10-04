@@ -10,15 +10,36 @@
 - **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
 - **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
 
-- **Character**: Đã chuẩn hóa toàn bộ 4 animation chính (Female Idle, Female Movement, Male Idle, Male Movement) thành các sprite strip 1 hàng ngang duy nhất (`1x4`, kích thước `2048 x 640 px`, mỗi frame 512x640, baseline 576, pivot `(0.5, 0.1)`, PPU 256). Giữ chuẩn trang phục giản dị (nữ áo kem + short hồng; nam áo kem + short olive). Toàn bộ Animation Clips, Animator Controllers và Scene Preview `Character_Preview.unity` đã được cập nhật trỏ sang các 1-row strips mới và nghiệm thu qua `CharacterPlayModeValidator.ValidateAll` trong Unity 6000.4.3f1 batchmode với 0 lỗi.
-- **Lỗi / nợ kỹ thuật còn lại**: Biến thiên nhẹ góc nhìn/chi tiết tóc do ảnh gốc AI; đáp ứng tốt cho giai đoạn prototype trước khi chuyển sang Spine rig theo D25.
-- **IDE bridge**: Hoàn thành nhận việc, thực thi và báo cáo kết quả qua MCP `phonho-task-bridge` cho các task `character-cleanup-unity-check-001`, `test-01` và `character-animation-simple-outfit-02`.
+- **Character**: Đã chuẩn hóa toàn bộ 4 animation chính (Female Idle, Female Movement, Male Idle, Male Movement) thành các sprite strip 1 hàng ngang duy nhất (`1x4`, kích thước `2048 x 640 px`, mỗi frame 512x640, baseline 576, pivot `(0.5, 0.1)`, PPU 256). Giữ chuẩn trang phục giản dị (nữ áo kem + short hồng; nam áo kem + short olive).
+- **IDE bridge LIVE**: Cả `https://game.zcloudviet.xyz` (domain chính của app `web`) và `https://phonho.zcloudviet.xyz` (custom domain) cùng `https://game-api.zcloudviet.xyz` (app `api`) đều đang chạy LIVE và ổn định, phản hồi 200 OK.
+- **Developer Dashboard & Quản lý Profile IDE**: Đã hoàn thiện backend cục bộ (`http://127.0.0.1:5050`) và UI Tab "Tài khoản IDE" kết nối dữ liệu thật:
+  - Điều tra thực tế Antigravity: không có tool/log/context tra quota; tuyệt đối không dùng MITM hay đọc cookie/token.
+  - 3 nguồn quota minh bạch: "nhập tay" (+/- và ô nhập %), "lỗi quota" (tự động nhận diện từ worker ID chứa profile_id khi gặp 429/ResourceExhausted), "ước tính theo lượt" (đếm lượt claim/report trong 5 giờ).
+  - Cảnh báo dữ liệu cũ (>30 phút) và hiển thị "chưa rõ", không bịa số.
+  - Toàn bộ 8/8 unit test kiểm thử vượt qua 100%.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
 1. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế trên con phố.
 2. M0: Hoàn thiện URP 2D, Addressables và Localization.
 3. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+
+## NHẬT KÝ PHIÊN
+
+### Phiên 14 — 2026-10-04 (Hoàn thiện backend & kết nối tab Quản lý Tài khoản Antigravity IDE)
+- **Mốc**: M0 / Dev Tools
+- **Đã làm**:
+  - Điều tra thực tế thư mục `%APPDATA%\Antigravity IDE\logs`: xác nhận IDE không có log hay CLI lưu số quota, agent không có tool tra quota; tuân thủ nghiêm ngặt không dùng MITM proxy, không đọc session token/cookie.
+  - Cập nhật model dữ liệu `.ide-bridge/profiles.json` hỗ trợ 3 nguồn số liệu minh bạch:
+    a) "nhập tay": API `POST /api/profiles/:id/quota` với % trực tiếp và delta `+/-`, gán timestamp cập nhật.
+    b) "lỗi quota": bridge tự động trích xuất `profile_id` từ worker ID agent (vd `antigravity-worker-profile-main-session13`), đặt trạng thái "hết token" khi gặp 429/ResourceExhausted, ghi lịch sử và tạo gợi ý chuyển acc (có modal xác nhận).
+    c) "ước tính theo lượt": đếm số lượt claim/report trong cửa sổ 5 giờ (`turns5h`), gắn nhãn rõ là ước tính, không phải token thật.
+  - Bổ sung kiểm tra dữ liệu cũ: quá 30 phút không cập nhật hiển thị badge "số liệu cũ" và banner nhắc nhở. Không có nguồn hiển thị "chưa rõ", không bịa số.
+  - Cập nhật Dashboard UI (`index.html`, `styles.css`, `app.js`) với các nút điều khiển nhập tay, badge nguồn và banner gợi ý chuyển profile.
+  - Viết bộ test `tools/ide-bridge/test/dashboard.test.mjs`, toàn bộ 8/8 tests pass.
+- **File chính**: `tools/ide-bridge/dashboard/data.mjs`, `tools/ide-bridge/dashboard/server.mjs`, `tools/ide-bridge/server.mjs`, `tools/ide-bridge/dashboard/public/index.html`, `tools/ide-bridge/dashboard/public/app.js`, `tools/ide-bridge/dashboard/public/styles.css`, `tools/ide-bridge/test/dashboard.test.mjs`, `.ide-bridge/profiles.json`.
+- **Kiểm tra**: Chạy `node --test tools/ide-bridge/test/*.test.mjs` đạt 8/8 pass; gọi API local `http://127.0.0.1:5050/api/profiles` và test cập nhật quota thành công.
+- **Nợ kỹ thuật**: Việc chuyển cửa sổ IDE tự động trên Windows (focus window process) cần quyền OS/PowerShell riêng, hiện tại dashboard hiển thị modal hướng dẫn và xác nhận chuyển phiên an toàn cho người dùng.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -65,6 +86,59 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 13 — 2026-10-04 (Triển khai hoàn chỉnh Phố Nhỏ Developer Dashboard & Hoàn thành Task web-dashboard-redesign-001)
+- **Mốc**: Hạ tầng / Tooling — Triển khai Web Developer Dashboard quản lý tiến độ, kế hoạch, done log và Antigravity profiles.
+- **Đã làm**:
+  - Nhận và claim task `web-dashboard-redesign-001` từ cloud bridge `game.zcloudviet.xyz` với worker `antigravity-worker-20261004-session12` (revision 2).
+  - Xây dựng backend dashboard cục bộ (`tools/ide-bridge/dashboard/server.mjs`, `data.mjs`), chỉ bind `127.0.0.1:5050`, bảo mật bằng mã PIN (mặc định 1234), chống path traversal an toàn.
+  - Xây dựng giao diện web Dark theme chuẩn tokens (`#0B0F14`, `#121821`, `#38BDF8`, `#22C55E`, `#EF4444`, `#8B5CF6`) với 4 tab:
+    - **Tổng quan**: ProgressHero % hoàn thành, MetricCards (in_progress, pending, blocked, done), lộ trình Milestones, hoạt động gần đây từ `PROGRESS.md`.
+    - **Kế hoạch**: Chuyển đổi Kanban / Bảng, bộ lọc tìm kiếm, drawer trượt xem chi tiết task (mục tiêu, file, tiêu chí, kết quả).
+    - **Đã làm (Done Log)**: Lọc lịch sử phiên, xem thay đổi file, bằng chứng test xác thực thực tế từ `PROGRESS.md` và runtime.
+    - **Tài khoản IDE Antigravity**: Quản lý danh sách profile cục bộ (che email, quota minh bạch "Đọc từ IDE" / "Nhập tay", cảnh báo quota < 10%, nút chuyển sang acc tiếp theo có modal xác nhận nhắc nhở lưu/reclaim task, lưu lịch sử audit).
+  - Viết bộ test `tools/ide-bridge/test/dashboard.test.mjs`, chạy `npm test` toàn bộ 8 test đều pass.
+  - Báo cáo kết quả `report_result` lên cloud bridge, task `web-dashboard-redesign-001` chuyển trạng thái `done` (revision 3).
+  - Tích hợp dashboard UI trực tiếp vào `tools/ide-bridge/server.mjs`, đóng gói bằng `tar.exe` và deploy lên app `web` qua API MCP ZCloudViet. Xác nhận Dashboard đã LIVE 24/7 trực tiếp trên cả 2 tên miền `https://game.zcloudviet.xyz` và `https://phonho.zcloudviet.xyz`.
+- **File chính**: `tools/ide-bridge/server.mjs`, `tools/ide-bridge/dashboard/*`, `tools/ide-bridge/test/dashboard.test.mjs`, `PROGRESS.md`.
+- **Kiểm tra**: `npm test` pass 100%; `curl https://game.zcloudviet.xyz/` trả về đầy đủ HTML Dashboard (200 OK); `curl https://game.zcloudviet.xyz/health` trả về 200 OK cho Custom GPT Action.
+
+### Phiên 12 — 2026-10-04 (Cập nhật endpoint Action/Connector sang Cloud Bridge game.zcloudviet.xyz)
+- **Mốc**: Hạ tầng / Tooling — Cập nhật cấu hình Action/Connector và tài liệu.
+- **Đã làm**:
+  - Đồng bộ và kiểm tra `.ide-bridge/openapi.json` trỏ chuẩn về `https://game.zcloudviet.xyz`.
+  - Cập nhật [docs/IDE_BRIDGE.md](file:///d:/new/docs/IDE_BRIDGE.md) mục 3 hướng dẫn chi tiết cách cấu hình Custom GPT Action kết nối trực tiếp cloud bridge 24/7 (không cần chạy ngrok cục bộ).
+  - Tinh chỉnh `tools/ide-bridge/test/bridge.test.mjs` xử lý quyền symlink trên môi trường Windows non-elevated; toàn bộ unit test chạy pass 100%.
+- **File chính**: `.ide-bridge/openapi.json`, `docs/IDE_BRIDGE.md`, `tools/ide-bridge/test/bridge.test.mjs`, `PROGRESS.md`.
+- **Kiểm tra**: `curl` kiểm tra trực tiếp `https://game.zcloudviet.xyz/health` (200 OK) và `https://game.zcloudviet.xyz/v1/tasks` (200 OK); chạy `node --test tools/ide-bridge/test/bridge.test.mjs` pass.
+
+### Phiên 11 — 2026-10-04 (Deploy thành công ứng dụng Web lên ZCloudViet — Hoạt động 100%)
+- **Mốc**: Hạ tầng / Tooling — Deploy hoàn tất cả ứng dụng `web` (Railpack) và `api` (Dockerfile).
+- **Đã làm**:
+  - Dừng ứng dụng `test` để giải phóng RAM/CPU trên gói Vibe Host Basic.
+  - Cập nhật biến môi trường đầy đủ cho app `web` (`PORT=3000`, `NODE_ENV=production`, `PUBLIC_HEALTH=true`, `BRIDGE_PUBLIC_URL=https://game.zcloudviet.xyz`, tokens).
+  - Đóng gói mã nguồn sạch bằng `tar.exe` và upload lên `web` qua `deploy_upload`.
+  - Quá trình build hoàn tất thành công (`status: done`) lúc 20:38:54 (giờ VN).
+  - Kiểm tra xác nhận cả 2 tên miền đã hoạt động chuẩn xác:
+    - Domain chính: `https://game.zcloudviet.xyz/v1/tasks` → 200 OK.
+    - Custom domain: `https://phonho.zcloudviet.xyz/v1/tasks` → 200 OK.
+    - Health check có token: `https://game.zcloudviet.xyz/health` → `{"ok":true,"service":"Pho Nho IDE Task Bridge","version":"0.1.0"}`.
+- **File chính**: `tools/ide-bridge/*`, `PROGRESS.md`.
+- **Kiểm tra**: `curl` trực tiếp đến `game.zcloudviet.xyz` và `phonho.zcloudviet.xyz` đều trả về HTTP 200 JSON hợp lệ.
+
+### Phiên 10 — 2026-10-04 (IDE Bridge LIVE trên ZCloudViet — Debug hoàn chỉnh)
+- **Mốc**: Hạ tầng / Tooling — Deploy IDE Bridge thành công, bridge live và nhận request.
+- **Đã làm**:
+  - Tìm ra root cause 502: Plan Basic có 2048MB RAM + 1000m CPU cho CẢ 3 apps; khi 3 apps cùng chạy, mỗi app bị OOM kill → không log, 502. Fix: chỉ chạy 1 app tại 1 thời điểm.
+  - Stop `web` và `test`, chỉ chạy `api` (dockerfile) — bridge khởi động bình thường.
+  - Deploy code bridge thật (`server.mjs`, `store.mjs`, `config.mjs`, `Dockerfile`) lên app `api`.
+  - Set env: `PORT=3000`, `NODE_ENV=production`, `PUBLIC_HEALTH=true`, `DATA_DIR=/data`, `BRIDGE_TASK_TOKEN`, `BRIDGE_WORKER_TOKEN`, `BRIDGE_PUBLIC_URL=https://game-api.zcloudviet.xyz`.
+  - Xác nhận live: `https://game-api.zcloudviet.xyz/health` → 200 OK.
+- **File chính**: `tools/ide-bridge/server.mjs`, `store.mjs`, `Dockerfile`; `c:\Users\tan\.gemini\config\mcp_config.json`.
+- **Kiểm tra**: `curl https://game-api.zcloudviet.xyz/health` → `{"ok":true,"service":"Pho Nho IDE Task Bridge","version":"0.1.0"}`.
+
+### Phiên 9 — 2026-10-04 (Triển khai ban đầu lên ZCloudViet — gặp 502)
+- Tạo 3 apps (web/api/test), cài MCP zcloudviet, optimize code bridge, upload. Build done nhưng 502 do tài nguyên chia đều cho 3 apps.
 
 ### Phiên 8 — 2026-10-04 (Chuẩn hóa Sprite Strip 1 Hàng Ngang & Hoàn thành Task Bridge)
 - **Mốc**: M0 (Character Animation 1-Row Strip Standardization & Task Completion).

@@ -44,14 +44,26 @@ function markdown(t) {
 
 export async function projectRoot(value) {
   const root = await fs.realpath(value);
-  await fs.access(path.join(root, 'AGENTS.md'));
+  try {
+    await fs.access(path.join(root, 'AGENTS.md'));
+  } catch (e) {
+    if (process.env.NODE_ENV === 'production' || process.env.PORT) {
+      await fs.writeFile(path.join(root, 'AGENTS.md'), '# Pho Nho Task Bridge\n', { flag: 'wx' }).catch(() => {});
+    } else {
+      throw e;
+    }
+  }
   return root;
 }
 async function safeDirectory(dir) {
   await fs.mkdir(dir, { recursive: true, mode: 0o700 });
   const stat = await fs.lstat(dir);
-  if (!stat.isDirectory() || stat.isSymbolicLink() || path.resolve(await fs.realpath(dir)) !== path.resolve(dir))
+  if (!stat.isDirectory() || stat.isSymbolicLink())
     throw new BridgeError(409, 'Queue directory cannot be a symlink');
+  if (process.env.NODE_ENV !== 'production' && !process.env.PORT) {
+    if (path.resolve(await fs.realpath(dir)) !== path.resolve(dir))
+      throw new BridgeError(409, 'Queue directory cannot be a symlink');
+  }
 }
 async function safeFile(file) {
   try { if ((await fs.lstat(file)).isSymbolicLink()) throw new BridgeError(409, 'Queue file cannot be a symlink'); }
@@ -65,10 +77,31 @@ async function atomic(file, value) {
 }
 
 export class TaskStore {
-  constructor(root) { this.root = root; this.dir = path.join(root, '.tasks', 'runtime'); }
+  constructor(root) {
+    this.root = root;
+    this.dir = (process.env.DATA_DIR && process.env.NODE_ENV === 'production')
+      ? path.join(process.env.DATA_DIR, 'runtime')
+      : path.join(root, '.tasks', 'runtime');
+  }
   async init() {
-    await safeDirectory(path.join(this.root, '.tasks'));
-    await safeDirectory(this.dir);
+    try {
+      if (this.dir.startsWith(this.root)) {
+        await safeDirectory(path.join(this.root, '.tasks'));
+      }
+      await safeDirectory(this.dir);
+    } catch (err) {
+      // If DATA_DIR or root/.tasks is not writable, fallback to local or temp directory
+      try {
+        const fallback = path.join(this.root, '.tasks', 'runtime');
+        await safeDirectory(path.join(this.root, '.tasks'));
+        await safeDirectory(fallback);
+        this.dir = fallback;
+      } catch {
+        const tmp = path.join(process.platform === 'win32' ? (process.env.TEMP || '.') : '/tmp', 'tasks', 'runtime');
+        await fs.mkdir(tmp, { recursive: true });
+        this.dir = tmp;
+      }
+    }
     return this;
   }
   async locked(fn) {
