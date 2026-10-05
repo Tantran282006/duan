@@ -45,34 +45,31 @@ Gõ trong agent Antigravity:
 
 Agent nhận việc rồi sử dụng khả năng chỉnh file/chạy công cụ của IDE. Bridge không thực thi shell. Mặc định IDE có thể yêu cầu xác nhận công cụ theo chính sách MCP của bạn.
 
-## 3. Cho Custom GPT gửi task qua HTTPS
+## 3. Cho Custom GPT gửi task qua Cloud Bridge (game.zcloudviet.xyz)
 
-Cài ngrok và đăng nhập/cấu hình authtoken theo hướng dẫn chính thức:
-<https://ngrok.com/docs/share-localhost/quickstart>.
+Bridge hiện đã được triển khai LIVE 24/7 trên ZCloudViet tại `https://game.zcloudviet.xyz` (hoặc `https://phonho.zcloudviet.xyz`). Bạn **không cần chạy ngrok** hoặc treo terminal bridge ở máy cá nhân khi gửi task từ Custom GPT.
 
-Mở terminal tunnel ở máy:
+*(Tùy chọn: Nếu muốn chạy bridge cục bộ qua ngrok thay vì cloud, chạy `node tools/ide-bridge/setup.mjs --url <ngrok-url>` và `node tools/ide-bridge/server.mjs`).*
 
-```powershell
-ngrok http 5000
-```
+### Cấu hình Custom GPT Action:
 
-Lấy URL HTTPS mà ngrok hiển thị, ví dụ `https://your-domain.ngrok-free.app`. Trong terminal dự án khác:
-
-```powershell
-node tools/ide-bridge/setup.mjs --url https://your-domain.ngrok-free.app
-node tools/ide-bridge/server.mjs
-```
-
-Dùng URL thật, không dùng URL ví dụ. Server chỉ lắng nghe `127.0.0.1:5000`; ngrok chuyển tiếp HTTPS về cổng đó. Giữ hai terminal chạy khi dùng Actions. Nếu URL tunnel đổi: dừng server, chạy setup với URL mới, cập nhật schema trong GPT và chạy lại server.
-
-Trong trình chỉnh sửa Custom GPT:
-
-1. Thêm Action và dán nội dung `.ide-bridge/openapi.json`.
-2. Authentication: **API Key → Bearer**. Mở `.ide-bridge/secrets.env` tại máy, copy riêng giá trị `BRIDGE_TASK_TOKEN` vào ô API key. Không copy cả dòng hoặc dấu `Bearer`. `BRIDGE_WORKER_TOKEN` dành cho REST worker riêng; không cấp cho GPT.
-3. Dán hướng dẫn trong `docs/GPT_BRIDGE_INSTRUCTIONS.md` vào Instructions và giữ GPT ở chế độ riêng tư.
-4. Test `getBridgeHealth`: phải trả `ok: true`. Tiếp theo gửi một task nhỏ và đọc lại bằng `getProjectTask`.
-
-Actions gọi API của bridge từ Custom GPT; không tự cài Action vào cuộc trò chuyện này và không tự mang theo lịch sử chat. Đưa brief đã chốt vào GPT trước khi bàn giao. Trong workspace có chính sách chặn domain Actions, cần cho phép domain tunnel theo cài đặt của workspace.
+1. Mở Custom GPT trong GPT Builder → tab **Configure** → mục **Actions** → chọn **Create new action** (hoặc chỉnh sửa Action hiện có).
+2. Tại ô **Schema**: Dán toàn bộ nội dung file [.ide-bridge/openapi.json](file:///d:/new/.ide-bridge/openapi.json).
+   - Trong schema, trường `servers` đã trỏ về:
+     ```json
+     "servers": [
+       {
+         "url": "https://game.zcloudviet.xyz"
+       }
+     ]
+     ```
+3. Tại mục **Authentication**: Chọn **API Key** → Auth Type: **Bearer**.
+   - Mở file [.ide-bridge/secrets.env](file:///d:/new/.ide-bridge/secrets.env) trên máy, copy riêng giá trị `BRIDGE_TASK_TOKEN` và dán vào ô **API Key**.
+   - *Lưu ý: Không copy cả dòng hoặc chữ `Bearer`; chỉ copy chuỗi token hex.*
+4. Tại tab **Instructions** của GPT: Dán hướng dẫn trong [docs/GPT_BRIDGE_INSTRUCTIONS.md](file:///d:/new/docs/GPT_BRIDGE_INSTRUCTIONS.md) và giữ GPT ở chế độ riêng tư (Only me / Anyone with a link).
+5. **Kiểm tra kết nối (Test)**:
+   - Trong giao diện Action Test, bấm Test cho `getBridgeHealth`: phản hồi phải trả về HTTP 200 `{"ok": true, "service": "Pho Nho IDE Task Bridge", "version": "0.1.0"}`.
+   - Thử nghiệm gửi task mẫu và đọc lại bằng `getProjectTask`.
 
 ## 4. Quy trình hằng ngày
 
