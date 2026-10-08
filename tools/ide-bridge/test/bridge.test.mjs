@@ -56,6 +56,35 @@ test('queue symlinks cannot write outside project', async t => {
   await assert.rejects(store.submit(task('evil')), e => e.status === 409);
   assert.equal(await fs.readFile(outside, 'utf8'), 'untouched');
 });
+test('a 108-file audit can report every changed file and retry without duplicating the result', async t => {
+  const { store } = await fixture(t);
+  await store.submit(task('git-audit'));
+  const { task: claimed } = await store.claim({ id: 'git-audit', worker: 'git-audit-worker' });
+  const changed_files = Array.from({ length: 108 }, (_, i) => `Assets/PhoNho/Audit/File${i}.cs`);
+  const result = { worker: claimed.worker, expected_revision: claimed.revision, status: 'done',
+    summary: 'Read-only audit completed; files have not been committed.', changed_files,
+    validation: ['108 changed paths inspected'], commit: null };
+  assert.deepEqual((await store.report(claimed.id, result)).task.result.changed_files, changed_files);
+  assert.equal((await store.report(claimed.id, result)).task.revision, 3);
+  assert.equal(actionSchema('https://demo.example').components.schemas.Task.properties.result.properties.changed_files.maxItems, 200);
+  await assert.rejects(store.report(claimed.id, { ...result,
+    changed_files: Array.from({ length: 201 }, (_, i) => `Assets/File${i}.cs`) }), e => e.status === 400);
+  await assert.rejects(store.report(claimed.id, { ...result,
+    changed_files: Array.from({ length: 200 }, (_, i) => `Assets/${'x'.repeat(200)}${i}.cs`) }), /24 KiB/);
+});
+test('reclaiming a blocked task clears the old result while retrying an active claim keeps its revision', async t => {
+  const { store } = await fixture(t);
+  await store.submit(task());
+  const { task: first } = await store.claim({ worker: 'first-worker' });
+  await store.report(first.id, { worker: first.worker, expected_revision: first.revision, status: 'blocked',
+    summary: 'Previous attempt: Unity unavailable', changed_files: [], validation: ['Unity unavailable'] });
+  const { task: retry } = await store.claim({ id: first.id, worker: 'retry-worker' });
+  assert.equal(retry.status, 'in_progress');
+  assert.equal(retry.result, null);
+  assert.equal((await store.list('in_progress')).tasks[0].result_summary, null);
+  const sameClaim = await store.claim({ id: first.id, worker: 'retry-worker' });
+  assert.equal(sameClaim.task.revision, retry.revision);
+});
 test('REST auth, roles, body limits, cross-origin/host, task round trip and rate limit', async t => {
   const { store } = await fixture(t);
   const taskToken = 'a'.repeat(64), workerToken = 'b'.repeat(64);
@@ -129,14 +158,21 @@ test('end to end: REST submission, MCP stdio claim/result, REST retrieval', asyn
   const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } });
   assert.equal(init.result.protocolVersion, '2025-06-18');
   child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
-  assert.equal((await rpc('tools/list', {})).result.tools.length, 4);
+  const advertisedTools = (await rpc('tools/list', {})).result.tools;
+  assert.equal(advertisedTools.length, 4);
+  const reportSchema = advertisedTools.find(tool => tool.name === 'report_result').inputSchema;
+  assert.deepEqual(reportSchema.properties.commit.type, ['string', 'null']);
+  assert.equal(reportSchema.properties.changed_files.maxItems, 200);
   const response = await rpc('tools/call', { name: 'claim_task', arguments: { worker: 'mcp-test-session' } });
   const claimed = JSON.parse(response.result.content[0].text).task;
   const report = await rpc('tools/call', { name: 'report_result', arguments: { id: claimed.id, worker: claimed.worker,
-    expected_revision: claimed.revision, status: 'blocked', summary: 'Unity unavailable', changed_files: [], validation: ['Unity not executed'] } });
+    expected_revision: claimed.revision, status: 'blocked', summary: 'Unity unavailable',
+    changed_files: Array.from({ length: 108 }, (_, i) => `Assets/File${i}.cs`),
+    validation: ['Unity not executed'], commit: null } });
   assert.equal(report.result.isError, undefined); assert.equal((await store.read(task().id)).status, 'blocked');
   const retrieved = await (await fetch(base + '/v1/tasks/' + task().id, { headers: { Authorization: 'Bearer ' + taskToken } })).json();
   assert.equal(retrieved.task.result.summary, 'Unity unavailable');
+  assert.equal(retrieved.task.result.changed_files.length, 108);
   assert.equal((await rpc('tools/call', { name: 'not_a_tool', arguments: {} })).result.isError, true);
   assert.equal(stderr, '');
 });

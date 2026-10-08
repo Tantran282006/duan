@@ -84,6 +84,8 @@ Actions gọi API của bridge từ Custom GPT; không tự cài Action vào cu�
 
 Các trạng thái: pending → in_progress → done hoặc blocked. Claim không truyền ID chỉ lấy pending; muốn làm lại blocked phải truyền ID rõ ràng. Task in_progress chỉ được cùng worker nhận lại. Gửi lại cùng ID/cùng nội dung không tạo việc trùng; đổi nội dung phải dùng ID mới. Không sửa trực tiếp JSON runtime khi bridge đang chạy.
 
+Khi nhận lại task blocked, kết quả của lần chạy cũ được xóa khỏi trạng thái đang chạy để tránh hiểu nhầm là kết quả mới. Báo cáo nhận tối đa 200 đường dẫn `changed_files`, mỗi đường dẫn tối đa 240 ký tự; toàn bộ kết quả vẫn giới hạn 24 KiB. Nếu chưa commit, dùng `commit: null`; chỉ ghi SHA khi đã tạo commit thật. Danh sách 108 file có thể báo đầy đủ nếu nằm trong giới hạn dung lượng.
+
 ## 5. Bàn giao qua Markdown/Git
 
 Không cần tunnel hoặc Custom GPT để dùng `.tasks/current-task.md`. Trong Antigravity:
