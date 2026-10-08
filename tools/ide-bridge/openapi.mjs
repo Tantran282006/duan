@@ -8,7 +8,7 @@ export function actionSchema(url) {
   const task = { type: 'object', properties: { ...taskInput.properties,
     status: { type: 'string', enum: ['pending', 'in_progress', 'blocked', 'done'] }, revision: { type: 'integer' },
     worker: { type: ['string', 'null'] }, result: { type: ['object', 'null'], properties: {
-      summary: { type: 'string' }, changed_files: stringArray(100, 240), validation: stringArray(40, 1000), commit: { type: ['string', 'null'] } } } } };
+      summary: { type: 'string' }, changed_files: stringArray(200, 240), validation: stringArray(40, 1000), commit: { type: ['string', 'null'] } } } } };
   const response = (schema, description = 'Success') => ({ description, content: { 'application/json': { schema } } });
   const envelope = { type: 'object', properties: { task: { $ref: '#/components/schemas/Task' } } };
   const errors = { '400': response({ type: 'object', properties: { error: { type: 'string' } } }, 'Invalid task'),

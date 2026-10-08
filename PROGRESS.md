@@ -4,6 +4,9 @@
 
 ## TRẠNG THÁI HIỆN TẠI
 
+- **Ưu tiên 2026-10-08**: sửa lỗi bridge và kiểm tra/commit thay đổi trước khi mở rộng gameplay. Đã sửa báo cáo trên 100 file (nay tối đa 200), kết quả cũ khi nhận lại task blocked và schema MCP cho `commit: null`; 8/8 kiểm thử Node qua trên checkout GitHub. Chưa triển khai các sửa này trên máy IDE.
+- **Giới hạn xác minh hiện tại**: truy cập bridge công khai trả Cloudflare 403/1010 lúc 09:29 (Asia/Saigon); chưa đọc được queue mới. 108 thay đổi do người dùng báo nằm trên máy Windows, chưa được đưa vào checkout này và chưa được kiểm tra/commit trong phiên này. Không suy ra đã hoàn tất chỉ từ trạng thái done trước đó.
+
 - **Mốc hiện tại**: M0 (Khởi tạo dự án Unity & nạp Asset cơ bản)
 - **Đã có**: bộ tài liệu thiết kế, cấu trúc `Assets/PhoNho/`, 13 background assets, scene phố `Assets/unity.unity` đã cân lại theo mặt phẳng XY, script parallax và công cụ dựng lại scene mẫu.
 - **Chưa có**: backend dev local (Docker Nakama + PostgreSQL), code logic gameplay đầy đủ.
@@ -16,9 +19,10 @@
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế trên con phố.
-2. M0: Hoàn thiện URP 2D, Addressables và Localization.
-3. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+1. Khôi phục truy cập bridge qua cấu hình Cloudflare của chủ domain; kiểm tra queue/worker thật trước khi giao thêm việc. Áp dụng bản sửa bridge sau khi kiểm tra xung đột với code chưa commit trên máy Windows.
+2. Chạy task hiện có `git-uncommitted-audit-008`; phân loại 108 thay đổi theo task, source/asset kèm `.meta`, file sinh tự động và secret; kiểm tra diff/build/test. Task này chỉ audit, không tự đổi phạm vi thành commit.
+3. Theo yêu cầu mới ngày 2026-10-08, commit các nhóm đã kiểm tra trên máy IDE, báo SHA và số file còn lại; giữ nguyên phần chưa đạt kiểm thử và ghi rõ lý do. Kiểm tra task chuyển cảnh `005`/`006` để giữ bản redo `006`, tránh chạy trùng.
+4. M0: kiểm thử nhân vật, nền đường và chuyển vào quán trong Unity; ghi bằng chứng/ảnh thật và nghiệm thu trước khi đóng task. Sau đó tiếp tục URP 2D, Addressables, Localization và backend.
 
 ## DECISIONS (quyết định đã chốt / giả định đang dùng)
 
@@ -65,6 +69,14 @@
 - Sẵn sàng bước vào giai đoạn kỹ thuật M0 (Khởi tạo repo cấu trúc thư mục, Unity project 2D URP và Nakama local dev).
 
 ## NHẬT KÝ PHIÊN (mới nhất ở trên cùng)
+
+### Phiên 9 — 2026-10-08 (Sửa lỗi báo cáo bridge, ưu tiên commit)
+- **Mốc**: sửa lỗi điều phối/task trước gameplay.
+- **Đã làm**: tăng giới hạn báo cáo từ 100 lên 200 đường dẫn, giữ giới hạn 24 KiB; đồng bộ OpenAPI/MCP và chấp nhận `commit: null` trong schema MCP.
+- **Đã làm**: nhận lại task blocked xóa kết quả cũ; retry claim đang chạy vẫn giữ revision.
+- **File chính**: `tools/ide-bridge/store.mjs`, `openapi.mjs`, `mcp.mjs`, `test/bridge.test.mjs`, `docs/IDE_BRIDGE.md`, `PROGRESS.md`.
+- **Kiểm tra**: tái hiện lỗi báo cáo 108 file và kết quả cũ trước sửa; sau sửa `node --test tools/ide-bridge/test/bridge.test.mjs` đạt 8/8, gồm REST → MCP thật → REST với 108 file và `commit: null`.
+- **Giới hạn**: không có Unity Editor hoặc 108 thay đổi Windows ở checkout này; bridge vẫn bị Cloudflare chặn. Chưa tuyên bố task trên máy IDE hoàn tất hoặc đã commit 108 file.
 
 ### Phiên 8 — 2026-10-04 (Chuẩn hóa Sprite Strip 1 Hàng Ngang & Hoàn thành Task Bridge)
 - **Mốc**: M0 (Character Animation 1-Row Strip Standardization & Task Completion).

@@ -132,14 +132,14 @@ export class TaskStore {
       if (!t) return { task: null };
       if (t.status === 'in_progress' && t.worker === worker) return { task: t };
       if (!['pending', 'blocked'].includes(t.status)) throw new BridgeError(409, 'Task already claimed or completed');
-      t.status = 'in_progress'; t.worker = worker; t.revision++; t.updated_at = new Date().toISOString();
+      t.status = 'in_progress'; t.worker = worker; t.result = null; t.revision++; t.updated_at = new Date().toISOString();
       await this.save(t); return { task: t };
     });
   }
   async report(id, input) {
     taskId(id); object(input, ['worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation', 'commit']);
     const result = { summary: text(input.summary, 'summary', 5000),
-      changed_files: strings(input.changed_files, 'changed files', 100, 240, projectFile),
+      changed_files: strings(input.changed_files, 'changed files', 200, 240, projectFile),
       validation: strings(input.validation, 'validation', 40, 1000), commit: input.commit ?? null };
     if (Buffer.byteLength(JSON.stringify(result)) > 24576) fail('Result exceeds 24 KiB; summarize validation');
     if (result.commit !== null && !/^[a-f0-9]{40}([a-f0-9]{24})?$/.test(result.commit)) fail('Invalid commit SHA');

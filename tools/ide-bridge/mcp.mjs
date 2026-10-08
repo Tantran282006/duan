@@ -12,7 +12,8 @@ const tools = [
     inputSchema: { type: 'object', properties: { id: str, worker: str }, required: ['worker'], additionalProperties: false } },
   { name: 'report_result', description: 'Report done or blocked with actual validation evidence. Uses the revision from claim_task.', annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: { type: 'object', properties: { id: str, worker: str, expected_revision: { type: 'integer' }, status: { type: 'string', enum: ['done', 'blocked'] }, summary: str,
-      changed_files: { type: 'array', items: str }, validation: { type: 'array', items: str }, commit: str }, required: ['id', 'worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation'], additionalProperties: false } }
+      changed_files: { type: 'array', maxItems: 200, items: { type: 'string', maxLength: 240 } }, validation: { type: 'array', items: str },
+      commit: { type: ['string', 'null'] } }, required: ['id', 'worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation'], additionalProperties: false } }
 ];
 export async function callTool(store, name, input) {
   if (name === 'list_tasks') { object(input, ['status', 'offset']); return store.list(input.status, input.offset ?? 0); }
