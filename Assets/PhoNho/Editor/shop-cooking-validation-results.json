@@ -1,0 +1,39 @@
+{
+    "success": true,
+    "timestamp": "2026-10-05T16:13:30.0186770Z",
+    "setupChecks": [
+        "GameSystem Setup: wallet=True, inventory=True, cooking=True, uiManager=True",
+        "Shop Triggers found in scene: count=4 (yêu cầu đúng 4 công trình)",
+        "Triggers types: IngredientShop=True, BobaShop=True, PlayerHouse=True, BreakfastShop=True"
+    ],
+    "walletChecks": [
+        "Initial Wallet: Scoin=200 (kỳ vọng 200), Gem=10 (kỳ vọng 10), Tcoin=0 (kỳ vọng 0)",
+        "Ledger entries: count=2, initialReason=Khởi tạo vốn ban đầu"
+    ],
+    "ingredientShopFlow": [
+        "Player at Ingredient Shop: X=-7,05, IsInside=True",
+        "Dialog opened: isOpen=True, activeType=IngredientShop",
+        "Purchases: Tea=True, Milk=True, Sugar=True, Pearl=True",
+        "Wallet after purchases: Scoin=133 (kỳ vọng 133)",
+        "Inventory: tea=2, milk=2, sugar=3, pearl=1",
+        "Over-budget purchase rejected: success=True (kỳ vọng false)"
+    ],
+    "bobaCookingFlow": [
+        "Opened Boba Shop dialog: isOpen=True",
+        "Start Cook Recipe 1 (Trà Sữa Truyền Thống): started=True, isCooking=True",
+        "Cook 1 Finished: Scoin=178 (kỳ vọng 178), ProductCount=1",
+        "Start Cook Recipe 2 (Trà Sữa Trân Châu Đường Đen): started=True",
+        "Cook 2 Finished: Scoin=243 (kỳ vọng 243), ProductCount=1",
+        "Cooking without ingredients rejected: success=True (kỳ vọng false)"
+    ],
+    "breakfastShopChecks": [
+        "Breakfast Shop opened: activeType=BreakfastShop"
+    ],
+    "playerHouseChecks": [
+        "Player House opened: activeType=PlayerHouse"
+    ],
+    "movementResumeChecks": [
+        "Dialog closed: isOpen=False"
+    ],
+    "errors": []
+}

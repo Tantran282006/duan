@@ -105,12 +105,14 @@ export function createBridgeServer({ store, taskToken, workerToken, allowedHosts
         const progress = await parseProgressMd(root || process.cwd());
         const taskList = await store.list();
         const tasks = taskList.tasks || [];
+        const archivedList = await store.listArchived();
         const metrics = {
-          total: tasks.length,
+          total: tasks.length + archivedList.tasks.length,
           inProgress: tasks.filter(t => t.status === 'in_progress').length,
           pending: tasks.filter(t => t.status === 'pending').length,
           blocked: tasks.filter(t => t.status === 'blocked').length,
-          done: tasks.filter(t => t.status === 'done').length
+          done: tasks.filter(t => t.status === 'done').length,
+          archived: archivedList.tasks.length
         };
         const completionPercent = Math.min(100, Math.round(20 + (progress.sessions.length * 6) + (metrics.done * 10)));
         return send(200, {
@@ -134,6 +136,16 @@ export function createBridgeServer({ store, taskToken, workerToken, allowedHosts
           try { fullTasks.push(await store.read(t.id)); } catch { fullTasks.push(t); }
         }
         return send(200, { tasks: fullTasks });
+      }
+
+      if (req.method === 'GET' && (url.pathname === '/api/worker-status' || url.pathname === '/v1/worker/status')) {
+        const statusFile = path.join(root || process.cwd(), '.tasks', 'runtime', 'worker-status.json');
+        try {
+          const raw = await fs.readFile(statusFile, 'utf8');
+          return send(200, JSON.parse(raw));
+        } catch {
+          return send(200, { workerOnline: false, status: 'offline', lastHeartbeat: null });
+        }
       }
 
       if (req.method === 'GET' && url.pathname === '/api/done-log') {
@@ -246,11 +258,20 @@ export function createBridgeServer({ store, taskToken, workerToken, allowedHosts
         }
         return send(200, claimRes);
       }
-      const match = /^\/v1\/tasks\/([a-zA-Z0-9][a-zA-Z0-9_-]{0,79})(\/result)?$/.exec(url.pathname);
+      if (req.method === 'GET' && url.pathname === '/v1/context') {
+        const includePending = url.searchParams.get('include_pending') !== 'false';
+        const includeInProgress = url.searchParams.get('include_in_progress') !== 'false';
+        return send(200, await store.getContext({ include_pending: includePending, include_in_progress: includeInProgress }));
+      }
+      const match = /^\/v1\/tasks\/([a-zA-Z0-9][a-zA-Z0-9_-]{0,79})(\/result|\/archive)?$/.exec(url.pathname);
       if (match && !match[2] && req.method === 'GET') {
         return send(200, { task: await store.read(match[1]) });
       }
-      if (match?.[2] && req.method === 'POST') {
+      if (match?.[2] === '/archive' && req.method === 'POST') {
+        if (!isWorker) throw new BridgeError(403, 'Worker token required');
+        return send(200, await store.archive(match[1]));
+      }
+      if (match?.[2] === '/result' && req.method === 'POST') {
         if (!isWorker) throw new BridgeError(403, 'Worker token required');
         const reportBody = await body(req);
         const reportRes = await store.report(match[1], reportBody);

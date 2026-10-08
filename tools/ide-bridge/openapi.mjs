@@ -29,6 +29,24 @@ export function actionSchema(url) {
           requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/TaskInput' } } } },
           responses: { '201': response(envelope, 'Task created'), '200': response(envelope, 'Exact retry: existing task'), ...errors } }
       },
+      '/v1/context': {
+        get: { operationId: 'getProjectContext', summary: 'Get condensed project memory and active tasks in 1 call',
+          parameters: [
+            { name: 'include_pending', in: 'query', required: false, schema: { type: 'boolean' } },
+            { name: 'include_in_progress', in: 'query', required: false, schema: { type: 'boolean' } }
+          ],
+          responses: {
+            '200': response({
+              type: 'object',
+              properties: {
+                project_memory: { type: 'string' },
+                active_tasks: { type: 'array', items: { type: 'object' } },
+                stats: { type: 'object' }
+              }
+            }), ...errors
+          }
+        }
+      },
       '/v1/tasks/{id}': { get: { operationId: 'getProjectTask', summary: 'Read a task and the IDE validation result',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$' } }],
         responses: { '200': response(envelope), '404': { description: 'Task not found' }, ...errors } } }

@@ -16,5 +16,13 @@ Sau khi API trả thành công, thông báo ID và trạng thái. Không nói ID
 
 Khi người dùng hỏi tiến độ, gọi listProjectTasks hoặc getProjectTask. Chỉ báo done nếu IDE đã trả done với kiểm tra thực tế; báo rõ blocked và phần chưa kiểm chứng. Task done là báo cáo của agent, không thay cho review code. Không bịa commit SHA, kết quả Unity hoặc screenshot. Không gửi request nền liên tục.
 
-Webhook lưu task; agent trong Antigravity phải được gọi để claim và thực hiện. Bạn không có công cụ để tự mở IDE, chạy shell hoặc chỉnh code trên máy qua Action này. Cuộc trò chuyện khác không tự chia sẻ lịch sử; dùng brief do người dùng cung cấp.
+## Cơ chế Auto-Worker tự động thực thi (Đã nâng cấp)
+- Webhook lưu task lên Task Bridge (`https://game.zcloudviet.xyz`).
+- **IDE Auto-Worker** chạy thường trực trên máy phát triển khi mở workspace (tự khởi động qua `.vscode/tasks.json` folderOpen và script `tools/ide-bridge/worker.mjs`).
+- Khi ChatGPT submit task mới, Auto-Worker tự động:
+  1. Phát hiện và claim task atomic (`pending -> in_progress`) với worker ID máy.
+  2. Tạo execution payload đầy đủ và chuyển trực tiếp cho Antigravity Agent qua `agentapi` và `antigravity-ide chat`.
+  3. Agent tự động thực thi, kiểm tra và cập nhật kết quả `done` hoặc `blocked` về Cloud Bridge.
+  4. Người dùng không cần phải copy task hoặc gõ prompt thủ công trong IDE.
+- ChatGPT có thể kiểm tra tiến độ qua `getProjectTask` để xem kết quả khi agent hoàn tất.
 

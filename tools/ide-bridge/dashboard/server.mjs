@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readEnvironment, rootFor, argumentsFor } from '../config.mjs';
 import { parseProgressMd, readRuntimeTasks, fetchCloudTasks, loadProfiles, saveProfiles, hashPin, maskEmail } from './data.mjs';
+import { TaskStore } from '../store.mjs';
+import { updateProjectMemoryWithTask } from '../memory.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -69,7 +71,7 @@ export function createDashboardServer(root, env) {
           return send(401, { error: 'Mã PIN không đúng (Mặc định: 1234)' });
         }
 
-        if (url.pathname === '/api/overview') {
+        if (url.pathname === '/api/overview' && req.method === 'GET') {
           const progress = await parseProgressMd(root);
           const localTasks = await readRuntimeTasks(root);
           const cloudTasks = await fetchCloudTasks(env);
@@ -109,7 +111,7 @@ export function createDashboardServer(root, env) {
           });
         }
 
-        if (url.pathname === '/api/tasks') {
+        if (url.pathname === '/api/tasks' && req.method === 'GET') {
           const localTasks = await readRuntimeTasks(root);
           const cloudTasks = await fetchCloudTasks(env);
 
@@ -124,7 +126,110 @@ export function createDashboardServer(root, env) {
           return send(200, { tasks: Array.from(taskMap.values()) });
         }
 
-        if (url.pathname === '/api/done-log') {
+        if (url.pathname === '/api/tasks' && req.method === 'POST') {
+          const body = await readBody(req);
+          if (!body.id || !body.title || !body.goal) {
+            return send(400, { error: 'Thiếu trường bắt buộc: id, title, hoặc goal' });
+          }
+          try {
+            const store = await new TaskStore(root).init();
+            const taskInput = {
+              id: String(body.id).trim(),
+              title: String(body.title).trim(),
+              goal: String(body.goal).trim(),
+              files: Array.isArray(body.files) ? body.files : (typeof body.files === 'string' && body.files.trim() ? body.files.split('\n').map(s => s.trim()).filter(Boolean) : []),
+              steps: Array.isArray(body.steps) ? body.steps : (typeof body.steps === 'string' && body.steps.trim() ? body.steps.split('\n').map(s => s.trim()).filter(Boolean) : ['Thực hiện công việc theo yêu cầu']),
+              acceptance_criteria: Array.isArray(body.acceptance_criteria) ? body.acceptance_criteria : (typeof body.acceptance_criteria === 'string' && body.acceptance_criteria.trim() ? body.acceptance_criteria.split('\n').map(s => s.trim()).filter(Boolean) : ['Hoàn thành và kiểm thử đạt yêu cầu'])
+            };
+            const result = await store.submit(taskInput);
+            return send(result.created ? 201 : 200, result);
+          } catch (err) {
+            return send(err.status || 400, { error: err.message });
+          }
+        }
+
+        const taskClaimMatch = /^\/api\/tasks\/([a-zA-Z0-9_-]+)\/claim$/.exec(url.pathname);
+        if (taskClaimMatch && req.method === 'POST') {
+          const id = taskClaimMatch[1];
+          const body = await readBody(req);
+          try {
+            const store = await new TaskStore(root).init();
+            const worker = body.worker || 'developer-dashboard-user';
+            const result = await store.claim({ id, worker });
+            return send(200, result);
+          } catch (err) {
+            return send(err.status || 400, { error: err.message });
+          }
+        }
+
+        const taskStatusMatch = /^\/api\/tasks\/([a-zA-Z0-9_-]+)\/status$/.exec(url.pathname);
+        if (taskStatusMatch && (req.method === 'POST' || req.method === 'PATCH')) {
+          const id = taskStatusMatch[1];
+          const body = await readBody(req);
+          const targetStatus = body.status;
+          if (!['pending', 'in_progress', 'blocked', 'done'].includes(targetStatus)) {
+            return send(400, { error: 'Trạng thái không hợp lệ (hỗ trợ: pending, in_progress, blocked, done)' });
+          }
+          try {
+            const store = await new TaskStore(root).init();
+            const result = await store.locked(async () => {
+              const t = await store.read(id);
+              if (targetStatus === 'pending') {
+                t.status = 'pending';
+                t.worker = null;
+              } else if (targetStatus === 'in_progress') {
+                t.status = 'in_progress';
+                t.worker = body.worker || t.worker || 'developer-dashboard-user';
+              } else if (targetStatus === 'blocked') {
+                t.status = 'blocked';
+                if (body.reason) {
+                  t.result = t.result || { summary: '' };
+                  t.result.summary = String(body.reason);
+                }
+              } else if (targetStatus === 'done') {
+                t.status = 'done';
+                t.result = {
+                  summary: body.summary || 'Hoàn thành thủ công từ Developer Dashboard',
+                  changed_files: Array.isArray(body.changed_files) ? body.changed_files : [],
+                  validation: Array.isArray(body.validation) ? body.validation : ['Manual confirmation via Developer Dashboard'],
+                  commit: body.commit || null
+                };
+              }
+              t.revision = (t.revision || 1) + 1;
+              t.updated_at = new Date().toISOString();
+              await store.save(t);
+              if (t.status === 'done') {
+                try {
+                  await updateProjectMemoryWithTask(root, t);
+                  await store.autoArchiveDone(2);
+                } catch {}
+              }
+              return { ok: true, task: t };
+            });
+            return send(200, result);
+          } catch (err) {
+            return send(err.status || 400, { error: err.message });
+          }
+        }
+
+        const taskDeleteMatch = /^\/api\/tasks\/([a-zA-Z0-9_-]+)$/.exec(url.pathname);
+        if (taskDeleteMatch && req.method === 'DELETE') {
+          const id = taskDeleteMatch[1];
+          try {
+            const store = await new TaskStore(root).init();
+            await store.locked(async () => {
+              const jsonFile = path.join(store.dir, id + '.json');
+              const mdFile = path.join(store.dir, id + '.md');
+              await fs.rm(jsonFile, { force: true });
+              await fs.rm(mdFile, { force: true });
+            });
+            return send(200, { ok: true, id });
+          } catch (err) {
+            return send(err.status || 500, { error: err.message });
+          }
+        }
+
+        if (url.pathname === '/api/done-log' && req.method === 'GET') {
           const progress = await parseProgressMd(root);
           const localTasks = await readRuntimeTasks(root);
           const doneTasks = localTasks.filter(t => t.status === 'done' || t.result);
@@ -135,7 +240,7 @@ export function createDashboardServer(root, env) {
           });
         }
 
-        if (url.pathname === '/api/profiles') {
+        if (url.pathname === '/api/profiles' && req.method === 'GET') {
           const profileData = await loadProfiles(root);
           // Return masked profile data with transparent quota sources and turns count
           const sanitized = {
@@ -253,6 +358,23 @@ export function createDashboardServer(root, env) {
           profileData.profiles.push(newProfile);
           await saveProfiles(root, profileData);
           return send(201, { ok: true, profile: newProfile });
+        }
+
+        const profileDeleteMatch = /^\/api\/profiles\/([a-zA-Z0-9_-]+)$/.exec(url.pathname);
+        if (profileDeleteMatch && req.method === 'DELETE') {
+          const id = profileDeleteMatch[1];
+          const profileData = await loadProfiles(root);
+          if (id === profileData.activeProfileId) {
+            return send(400, { error: 'Không thể xóa Profile đang hoạt động' });
+          }
+          if (profileData.profiles.length <= 1) {
+            return send(400, { error: 'Hệ thống cần duy trì ít nhất 1 Profile' });
+          }
+          const idx = profileData.profiles.findIndex(p => p.id === id);
+          if (idx === -1) return send(404, { error: 'Không tìm thấy profile' });
+          const removed = profileData.profiles.splice(idx, 1)[0];
+          await saveProfiles(root, profileData);
+          return send(200, { ok: true, profile: removed });
         }
 
         if (url.pathname === '/api/profiles/settings' && req.method === 'POST') {

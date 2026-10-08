@@ -195,12 +195,14 @@ namespace PhoNho.Character.Editor
             var toWalk = idleState.AddTransition(walkState);
             toWalk.AddCondition(AnimatorConditionMode.If, 0, "IsMoving");
             toWalk.hasExitTime = false;
-            toWalk.duration = 0.05f;
+            toWalk.duration = 0f;
+            toWalk.canTransitionToSelf = false;
 
             var toIdle = walkState.AddTransition(idleState);
             toIdle.AddCondition(AnimatorConditionMode.IfNot, 0, "IsMoving");
             toIdle.hasExitTime = false;
-            toIdle.duration = 0.05f;
+            toIdle.duration = 0f;
+            toIdle.canTransitionToSelf = false;
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();

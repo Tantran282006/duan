@@ -1,0 +1,27 @@
+{
+  "id": "unity-infinite-background-road-003",
+  "title": "Infinite background và road/ground cuộn vô tận",
+  "goal": "Triển khai cơ chế infinite looping / endless scrolling cho các lớp background (Sky, Distant Town) và mặt đường (Sidewalk, Road, Ground Collider) để nhân vật có thể đi xa vô tận về cả bên trái và bên phải mà không bị rơi hay hết nền. Tuyệt đối KHÔNG recycle hay nhân bản các công trình nhà cửa và street prop (nhà và prop giữ nguyên vị trí cố định của khu phố hiện tại). Bỏ giới hạn camera clamp và biên chặn để nhân vật chạy xa cả hai phía, kiểm tra và validate toàn diện.",
+  "files": [
+    "Assets/PhoNho/Scripts/Map",
+    "Assets/PhoNho/Editor",
+    "Assets/PhoNho/Scenes"
+  ],
+  "steps": [
+    "Khảo sát hiện trạng scene CityOverworld_PlayerMovement: camera bounds [-4.5, 4.5], boundary walls [-10.2, 10.2], background và ground hiện là static sprites có chiều dài hữu hạn.",
+    "Thiết kế cơ chế infinite background và infinite road/ground: tái sử dụng/looping các tiles/segments của Sky, Distant Town, Sidewalk và Road theo vị trí camera/player.",
+    "Giữ nguyên các công trình (Ingredient_Shop, Boba_Shop, Player_House, Breakfast_Shop, Shade_Tree) và street props (Street_Lamp, Bench, Bush) ở vị trí cố định của khu phố, tuyệt đối không nhân bản hay recycle nhà/prop.",
+    "Cập nhật ground collider hỗ trợ di chuyển vô tận hoặc theo chân player/camera để player không rơi khỏi mặt đất khi đi ra xa.",
+    "Cập nhật camera follow để không bị clamp biên cố định khi di chuyển vô tận.",
+    "Kiểm tra chạy xa cả về bên trái và bên phải xem background, sidewalk, road và collider có hiển thị liền mạch và physics vững chắc.",
+    "Viết validator tự động kiểm tra infinite background và road/ground khi chạy xa hai phía, chạy batchmode Unity, cập nhật PROGRESS.md và báo cáo kết quả."
+  ],
+  "acceptance_criteria": [
+    "Background (Sky, Distant Town) và Road/Ground (Sidewalk, Road, Collider) cuộn vô tận/infinite cả hai hướng trái và phải.",
+    "Tuyệt đối không recycle hay nhân bản nhà cửa và prop đường phố.",
+    "Camera follow theo nhân vật mượt mà khi chạy xa cả trái lẫn phải, không bị nghẽn biên cũ.",
+    "Ground collider luôn nâng đỡ nhân vật vững chắc, không rơi xuyên đất ở bất kỳ tọa độ X nào.",
+    "Kiểm tra thực tế chạy xa sang cả trái và phải thành công.",
+    "Unity compile và validator tự động pass 100% không có lỗi."
+  ]
+}

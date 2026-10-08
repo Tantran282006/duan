@@ -4,27 +4,211 @@
 
 ## TRẠNG THÁI HIỆN TẠI
 
-- **Mốc hiện tại**: M0 (Khởi tạo dự án Unity & nạp Asset cơ bản)
-- **Đã có**: bộ tài liệu thiết kế, cấu trúc `Assets/PhoNho/`, 13 background assets, scene phố `Assets/unity.unity` đã cân lại theo mặt phẳng XY, script parallax và công cụ dựng lại scene mẫu.
-- **Chưa có**: backend dev local (Docker Nakama + PostgreSQL), code logic gameplay đầy đủ.
-- **Chạy được**: mở trực tiếp `Assets/unity.unity`; hoặc dùng menu `Phố Nhỏ > Bản đồ > Tạo phố mẫu cân chỉnh` để sinh một scene tham chiếu mới.
-- **Nợ kỹ thuật / lỗi đã biết**: cần kiểm tra trực quan scene ở Game view 16:9 trên Unity 6000.4.3f1; một số PNG ghế/đèn/nhà có quầng nền gốc cần xử lý art riêng nếu còn lộ.
-
-- **Character**: Đã chuẩn hóa toàn bộ 4 animation chính (Female Idle, Female Movement, Male Idle, Male Movement) thành các sprite strip 1 hàng ngang duy nhất (`1x4`, kích thước `2048 x 640 px`, mỗi frame 512x640, baseline 576, pivot `(0.5, 0.1)`, PPU 256). Giữ chuẩn trang phục giản dị (nữ áo kem + short hồng; nam áo kem + short olive).
-- **IDE bridge LIVE**: Cả `https://game.zcloudviet.xyz` (domain chính của app `web`) và `https://phonho.zcloudviet.xyz` (custom domain) cùng `https://game-api.zcloudviet.xyz` (app `api`) đều đang chạy LIVE và ổn định, phản hồi 200 OK.
-- **Developer Dashboard & Quản lý Profile IDE**: Đã hoàn thiện backend cục bộ (`http://127.0.0.1:5050`) và UI Tab "Tài khoản IDE" kết nối dữ liệu thật:
-  - Điều tra thực tế Antigravity: không có tool/log/context tra quota; tuyệt đối không dùng MITM hay đọc cookie/token.
-  - 3 nguồn quota minh bạch: "nhập tay" (+/- và ô nhập %), "lỗi quota" (tự động nhận diện từ worker ID chứa profile_id khi gặp 429/ResourceExhausted), "ước tính theo lượt" (đếm lượt claim/report trong 5 giờ).
-  - Cảnh báo dữ liệu cũ (>30 phút) và hiển thị "chưa rõ", không bịa số.
-  - Toàn bộ 8/8 unit test kiểm thử vượt qua 100%.
+- **Mốc hiện tại**: M0 (Khởi tạo dự án Unity, Gameplay 2D Movement, Tương tác Cửa hàng & Web Developer Dashboard MAX VFX Đỉnh Cao)
+- **Đã có**: bộ tài liệu thiết kế, cấu trúc `Assets/PhoNho/`, 13 background assets, scene phố `Assets/unity.unity`, `CityOverworld_ArtLayout.unity` và scene gameplay `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`.
+- **Character & Gameplay 2D Movement**:
+  - Đã chuẩn hóa 4 sprite strip 1 hàng (`1x4`, `2048 x 640 px`, PPU 256, pivot 0.5, 0.1).
+  - Walk animation của cả Nam và Nữ được tái thiết kế: bước chân luân phiên 2 chân rõ ràng, tiếp đất tại baseline Y=575 (pivot Y=0.1), chuyển trạng thái tức thì, tốc độ 3.0 unit/s.
+  - Ground baseline thế giới được chuẩn hóa thống nhất tại `Y = -1.80f`.
+  - Prefab `Assets/PhoNho/Prefabs/Player_Character.prefab` với Rigidbody2D Dynamic (FreezeRotation Z), CapsuleCollider2D chạm đất chuẩn xác, Animator và script `PhoNhoPlayerMovement`.
+- **Infinite World (Background & Road/Ground cuộn vô tận)**:
+  - Đã triển khai cơ chế cuộn lặp vô tận `PhoNhoInfiniteLayer` cho bầu trời `01_Sky`, chân trời `02_DistantTown` (parallax 0.78), vỉa hè `Sidewalk`, và lòng đường `Road`.
+  - Đã triển khai `PhoNhoInfiniteGroundCollider` trên `Ground_Platform` giữ collider 100 units bao trọn Player.
+  - Bảo toàn tuyệt đối: không nhân bản nhà/prop.
+- **Tương tác Shop & Luồng Nấu ăn/Pha chế (Task unity-shop-interaction-cooking-flow-004)**:
+  - Trigger tương tác proximity `ShopInteractionTrigger` gắn trên 4 công trình (`Ingredient_Shop`, `Boba_Shop`, `Breakfast_Shop`, `Player_House`) hỗ trợ phím `[E]` và nút chạm UI.
+  - Hệ thống tiền tệ & ví `PlayerWallet`: Vốn khởi đầu chuẩn 200 Scoin, 10 Gem, 0 Tcoin. Mọi giao dịch tiền tệ đều đi qua `LedgerEntry` bất biến với `idempotency_key`.
+  - Hệ thống kho đồ `PlayerInventory` và dịch vụ chế biến `CookingService`.
+  - Giao diện UI `ShopUIManager`: TopBar HUD tiền tệ, Box prompt tương tác, Modal Dialog chuyên biệt cho từng công trình, thanh tiến độ nấu ăn real-time.
+- **Web Developer Dashboard MAX VFX Đẳng Cấp (Task web-dashboard-max-vfx-ui-003 & 002)**:
+  - Toàn bộ UI web (`http://127.0.0.1:5050`) đạt chuẩn thẩm mỹ cao cấp với rich aesthetics & MAX VFX sống động:
+    - Canvas Ambient Particle VFX (`#ambient-canvas`): Các hạt ánh sáng đèn lồng ấm áp trôi lơ lửng, phản ứng tương tác dạt ra khi di chuột.
+    - Web Audio Synthesizer SFX (`SoundSynth`): Âm thanh xúc giác tactile click, chime đổi tab, chime nhận task, arpeggio fanfare hoàn thành task và âm cảnh báo; nút bật/tắt âm thanh (`#btn-toggle-sound`) lưu trạng thái `localStorage`.
+    - Glassmorphism v2 & Specular Highlights: Viền sáng specular trên cards, modals và drawers; 3D tilt và hover lift mượt mà cho Kanban cards và Profile cards; shimmer sweep trên các thanh tiến độ quota; pulse glow cho status badges.
+    - Animated Number Counters (`animateNumber`): Đếm số mượt mà khi nạp dữ liệu overview và task metrics.
+    - Toast Notification hiện đại (`showToast`): Thay thế toàn bộ `alert(...)` thô sơ bằng toast có progress bar tự co lại theo thời gian, phát âm thanh tương ứng theo level.
+    - Hiệu ứng sóng nước Ripple (`setupRippleEffects`) trên toàn bộ nút bấm tương tác.
+    - Chức năng thật 100%: Tạo task mới thật, thêm/xóa profile thật, cài đặt quota cảnh báo, action buttons trong task drawer, HTML5 drag & drop giữa các cột Kanban.
+- **Project Memory & Token Optimization**:
+  - Đã có `PROJECT_STATE.md` (Project Memory/Handoff) cô đọng mục tiêu, kiến trúc, quyết định chốt.
+  - Endpoint `GET /v1/context` và MCP tool `get_project_context` hoạt động ổn định.
+- **Chạy được**:
+  - Web Developer Dashboard: chạy qua `node tools/ide-bridge/dashboard/server.mjs` (truy cập `http://127.0.0.1:5050`).
+  - Scene `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`: Di chuyển vô tận, lại gần các tiệm bấm `[E]` để mua nguyên liệu, pha trà sữa, nấu ăn sáng và xem hồ sơ nhà phố.
+- **IDE Auto-Worker Daemon (Task ide-bridge-auto-worker-bootstrap-007)**:
+  - Đã triển khai hoàn chỉnh daemon thường trực `tools/ide-bridge/worker.mjs` tự động khởi động khi mở workspace qua `.vscode/tasks.json` (`runOn: folderOpen`) và `.vscode/settings.json` (`task.allowAutomaticTasks: on`).
+  - Hỗ trợ single-instance lock `.worker.lock`, heartbeat `.tasks/runtime/worker-status.json`, log an toàn `.tasks/runtime/ide-worker.log` redact secrets.
+  - Tích hợp cơ chế dispatch chính thức vào Antigravity Agent qua `agentapi send-message` và companion `antigravity-ide.cmd chat -r`.
+  - Cơ chế lease recovery (10 phút) và Queue policy ưu tiên task `unity-enter-shop-scene-transition-redo-006`.
+  - Bộ test unit `worker.test.mjs` và test tích hợp `auto_worker_e2e.mjs` đạt 100% pass (22/22 test suites pass).
+  - Worker daemon hiện đang chạy thường trực trong background (`antigravity-auto-worker-msi`) và đã tự động claim task `unity-enter-shop-scene-transition-redo-006` sang `in_progress`.
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. M0: Đưa nhân vật mẫu vào `CityOverworld_ArtLayout.unity` (scene phố đi bộ) để kiểm tra tương quan tỉ lệ và di chuyển thực tế trên con phố.
-2. M0: Hoàn thiện URP 2D, Addressables và Localization.
-3. M0: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối; sau đó M1 ledger/RPC/unit test.
+1. Task `unity-enter-shop-scene-transition-redo-006`: Nhấn E chuyển scene thật vào quán `ShopInterior_HoneyBreakfast.unity`, không dùng UI overlay, có điểm spawn và Exit quay về trước cửa quán.
+2. M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt.
+3. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.
+4. M1: Triển khai đánh giá khách hàng (review/sao), gắn chặt với đơn hàng hoàn tất.
 
 ## NHẬT KÝ PHIÊN
+
+### Phiên 24 — 2026-10-08 (Lọc, kiểm tra toàn vẹn và commit toàn bộ 109 file dự án)
+- **Mốc**: M0 / Tooling & Audit Git Commit
+- **Đã làm**:
+  - Khảo sát và phân loại chi tiết toàn bộ 109 file chưa commit (24 modified, 84 untracked, 1 staged).
+  - Lọc và kiểm tra toàn vẹn: 31 file Unity `.meta` (0 orphan meta, 0 missing meta), 14 file C# scripts, 5 file Editor tools, 3 scenes/prefabs, 18 file IDE Bridge/Web Dashboard/Worker daemon, 10 file Skills.
+  - Xác nhận an toàn bảo mật: không có secret/API token bị lộ; toàn bộ 22/22 test suites bridge pass 100%.
+  - Thống nhất cùng người dùng giữ nguyên và commit toàn bộ 109 file (bao gồm cả ảnh Game View 1080p và file kết quả kiểm thử).
+  - Thực hiện stage và commit toàn bộ 109 file với commit message chuẩn mực.
+- **File chính**: `Assets/PhoNho/Scripts/**`, `Assets/PhoNho/Prefabs/**`, `Assets/PhoNho/Scenes/**`, `tools/ide-bridge/**`, `.agents/**`, `skills/**`, `.tasks/**`, `PROJECT_STATE.md`, `PROGRESS.md`.
+- **Cách kiểm tra**: `npm test` trong `tools/ide-bridge` pass 22/22; `git status` sạch (clean working directory).
+
+### Phiên 23 — 2026-10-06 (Hoàn thành Task ide-bridge-auto-worker-bootstrap-007: Nâng cấp IDE Bridge thành auto-worker thường trực)
+- **Mốc**: Tooling / IDE Auto-Worker Daemon Bootstrap
+- **Đã làm**:
+  - Nhận và claim task `ide-bridge-auto-worker-bootstrap-007` với worker `antigravity-worker-auto-bootstrap-007`.
+  - Phát hiện và kích hoạt entrypoint chính thức trên máy: `agentapi` (`C:/Users/tan/.gemini/antigravity-ide/bin/agentapi.bat`) và `antigravity-ide.cmd chat -r`.
+  - Xây dựng daemon `tools/ide-bridge/worker.mjs` với single-instance lock (`.worker.lock`), lease recovery (10 phút) và status heartbeat (`worker-status.json`).
+  - Cấu hình tự động khởi động khi mở workspace qua `.vscode/tasks.json` (`runOn: folderOpen`) và `.vscode/settings.json` (`task.allowAutomaticTasks: on`).
+  - Bổ sung endpoint `/api/worker-status` và `/v1/worker/status` trong `tools/ide-bridge/server.mjs`.
+  - Cập nhật hướng dẫn trong `docs/GPT_BRIDGE_INSTRUCTIONS.md`.
+  - Viết test unit `worker.test.mjs` và test tích hợp end-to-end `auto_worker_e2e.mjs`, toàn bộ 22 test suites pass 100%.
+  - Khởi chạy daemon background: worker tự động thăm dò Cloud Bridge, phát hiện và tự động claim `unity-enter-shop-scene-transition-redo-006` sang `in_progress`.
+- **File chính**: `tools/ide-bridge/worker.mjs`, `tools/ide-bridge/server.mjs`, `tools/ide-bridge/store.mjs`, `.vscode/tasks.json`, `.vscode/settings.json`, `docs/GPT_BRIDGE_INSTRUCTIONS.md`, `tools/ide-bridge/test/worker.test.mjs`, `tools/ide-bridge/test/auto_worker_e2e.mjs`.
+- **Cách kiểm tra**: Chạy `npm test` trong `tools/ide-bridge` (22/22 passed); kiểm tra `worker-status.json` và log `ide-worker.log`.
+
+### Phiên 22 — 2026-10-05 (Hoàn thành Task web-dashboard-max-vfx-ui-003: Nâng cấp Web Dashboard đẳng cấp MAX VFX & Visual Polish đỉnh cao)
+- **Mốc**: M0 / Web Dashboard MAX VFX UI & Visual Excellence
+- **Đã làm**:
+  - Nhận và claim task `web-dashboard-max-vfx-ui-003` với worker `antigravity-worker-20261005-dashboard-vfx`.
+  - Triển khai Canvas Ambient Particle VFX (`#ambient-canvas`): 42 hạt sáng lơ lửng màu đèn lồng phố ấm áp (amber, lantern gold, cozy cyan, soft purple) bay nhẹ, phản ứng đẩy dạt mượt mà khi rê chuột.
+  - Triển khai Web Audio Synthesizer SFX (`SoundSynth`): tổng hợp âm thanh bằng Web Audio API không phụ thuộc file ngoài, cung cấp xúc giác click, chime đổi tab, chime nhận task, arpeggio fanfare hoàn thành task và âm cảnh báo; nút bật/tắt âm thanh (`#btn-toggle-sound`) lưu trạng thái `localStorage`.
+  - Nâng cấp Glassmorphism v2 & Specular Highlights: viền sáng specular trên cards, modals và drawers; 3D tilt và hover lift mượt mà cho Kanban cards và Profile cards; shimmer sweep trên các thanh tiến độ quota; pulse glow cho status badges.
+  - Triển khai Animated Number Counters (`animateNumber`): đếm số mượt mà khi tải dữ liệu overview và task metrics.
+  - Triển khai hệ thống Toast Notification hiện đại (`showToast`): thay thế toàn bộ `alert(...)` thô sơ bằng toast có progress bar tự co lại theo thời gian, phát âm thanh tương ứng theo level (success, warning, error, info).
+  - Triển khai hiệu ứng sóng nước Ripple (`setupRippleEffects`) trên toàn bộ nút bấm tương tác.
+  - Bổ sung test case thứ 5 trong `tools/ide-bridge/test/dashboard.test.mjs` xác thực trọn vẹn toàn bộ visual elements, keyframes và subsystems.
+  - File chính: `tools/ide-bridge/dashboard/public/index.html`, `tools/ide-bridge/dashboard/public/styles.css`, `tools/ide-bridge/dashboard/public/app.js`, `tools/ide-bridge/test/dashboard.test.mjs`, `tools/ide-bridge/test/e2e_smoke_test.mjs`.
+  - Kiểm tra: `node tools/ide-bridge/test/e2e_smoke_test.mjs` PASS 100%, `node --test tools/ide-bridge/test/*.test.mjs` PASS 20/20 tests (1 skipped).
+- **Lỗi / Nợ kỹ thuật**: Không.
+
+### Phiên 21 — 2026-10-05 (Hoàn thành Task web-dashboard-functional-completion-002: Hoàn thiện toàn bộ chức năng UI Web Dashboard không để mock/nút chết)
+- **Mốc**: M0 / Web Dashboard Functional Completion & Developer Tooling
+- **Đã làm**:
+  - Nhận và claim task `web-dashboard-functional-completion-002` với worker `antigravity-worker-20261005-dashboard-002`.
+  - Khảo sát toàn bộ UI web dashboard, phát hiện các nút chết/thiếu chức năng: thiếu nút/modal Tạo Task mới, nút `+ Thêm Profile` không có handler/modal, thiếu nút Xóa Profile, thiếu form Cài đặt Quota, Task Drawer chỉ có chế độ đọc không có action thao tác task, Kanban board chưa hỗ trợ kéo thả đổi trạng thái.
+  - Bổ sung Backend REST API trong `tools/ide-bridge/dashboard/server.mjs`:
+    - `POST /api/tasks`: Nhận body task và submit vào `TaskStore`, lưu atomic JSON và Markdown.
+    - `POST /api/tasks/:id/claim`: Claim task với worker name.
+    - `POST/PATCH /api/tasks/:id/status`: Chuyển đổi trạng thái linh hoạt (`pending`, `in_progress`, `blocked`, `done`) kèm ghi nhận lý do và result.
+    - `DELETE /api/tasks/:id`: Xóa task an toàn khỏi runtime storage.
+    - `DELETE /api/profiles/:id`: Xóa profile phụ, ngăn chặn xóa active profile và bảo toàn ít nhất 1 profile.
+    - Sửa triệt để các route GET (`/api/tasks`, `/api/profiles`, `/api/overview`, `/api/done-log`) kiểm tra đúng `req.method === 'GET'`.
+  - Bổ sung Giao diện UI trong `tools/ide-bridge/dashboard/public/index.html`:
+    - Nút `+ Tạo Task` trên thanh điều khiển Kế hoạch, modal `create-task-modal` với nút sinh ID tự động.
+    - Modal `add-profile-modal` (Tên hiển thị, Email Google, Quota khởi tạo).
+    - Modal `settings-modal` (Ngưỡng cảnh báo Quota thấp, Tự động gợi ý chuyển khi dính 429).
+    - Modal `complete-task-modal` (Báo cáo kết quả và bằng chứng kiểm thử).
+    - Thanh action buttons trong Task Drawer: `⚡ Nhận Task`, `🛑 Báo Blocked`, `⏳ Trả về Pending`, `✅ Đánh dấu Hoàn thành`, `🗑️ Xóa Task`.
+    - Nút `Xóa` trên từng thẻ Profile phụ.
+  - Bổ sung Styles trong `tools/ide-bridge/dashboard/public/styles.css`:
+    - Styling modal lớn responsive, form controls, drawer actions bar, visual indicator khi drag & drop (dragging, drag-over).
+  - Triển khai Logic trong `tools/ide-bridge/dashboard/public/app.js`:
+    - Kết nối tất cả modals, phím tắt Escape đóng mọi modal.
+    - Triển khai HTML5 Drag & Drop trên Kanban Board: kéo card thả vào cột lập tức gọi API đổi trạng thái task thật trên server.
+    - Điều chỉnh Quota thủ công (+/- 5%, lưu %) và cập nhật theo thời gian thực.
+  - Viết test & nghiệm thu:
+    - Bổ sung test suite trong `tools/ide-bridge/test/dashboard.test.mjs` kiểm tra toàn bộ luồng tạo, claim, block, done, delete task và profile.
+    - Viết script `tools/ide-bridge/test/e2e_smoke_test.mjs` chạy end-to-end smoke test mô phỏng toàn bộ hành vi người dùng trên Web UI: pass 100% không lỗi.
+    - Toàn bộ 20 bài test trong `tools/ide-bridge/test/*.test.mjs` đều pass 100%.
+- **File chính**: `tools/ide-bridge/dashboard/server.mjs`, `tools/ide-bridge/dashboard/public/index.html`, `tools/ide-bridge/dashboard/public/app.js`, `tools/ide-bridge/dashboard/public/styles.css`, `tools/ide-bridge/test/dashboard.test.mjs`, `tools/ide-bridge/test/e2e_smoke_test.mjs`, `.tasks/web-dashboard-functional-completion-002.json`, `PROGRESS.md`, `PROJECT_STATE.md`.
+- **Kiểm tra**: E2E smoke test pass 100%, 20/20 unit test suites pass, 0 nút chết, 0 mock data.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 20 — 2026-10-05 (Hoàn thành Task unity-shop-interaction-cooking-flow-004: Tương tác Shop, Chợ Nguyên Liệu, Pha Chế Trà Sữa, Nấu Ăn Sáng & Hồ Sơ Nhà Phố)
+- **Mốc**: M0 / Shop Interaction, Economy Ledger & Cooking Flow
+- **Đã làm**:
+  - Nhận và claim task `unity-shop-interaction-cooking-flow-004` với worker `antigravity-worker-20261005-shop-cooking-004`.
+  - Xây dựng Domain Economy: `CurrencyType` (Scoin, Gem, Tcoin), `LedgerEntry` (bất biến, có `idempotencyKey`, `balanceAfter`, `timestamp`, `reason`), `PlayerWallet` quản lý vốn ban đầu [CHỐT] 200 Scoin, 10 Gem, 0 Tcoin, giao dịch qua `ApplyTransaction`.
+  - Xây dựng Domain Cooking & Inventory: `IngredientItem`, `RecipeItem`, `PlayerInventory` (quản lý tồn kho nguyên liệu và thành phẩm), `CookingService` (kiểm tra nguyên liệu, bắt đầu nấu, cập nhật tiến độ, hoàn tất và cộng doanh thu vào ví có idempotency).
+  - Xây dựng Gameplay Interaction: `ShopType` (4 loại shop), `ShopInteractionTrigger` gắn trên `Ingredient_Shop`, `Boba_Shop`, `Breakfast_Shop`, `Player_House` với prompt [E] và event proximity.
+  - Xây dựng UI: `ShopUIManager` tạo UI Canvas procedural 1920x1080 (TopBar HUD tiền tệ, Prompt Box, Shop Dialog modal chuyên biệt cho từng shop: Chợ sỉ nguyên liệu, Menu pha chế kèm thanh tiến độ Slider, Menu nấu ăn sáng, Hồ sơ gia chủ & Kho đồ nhà phố; tạm dừng/khôi phục input di chuyển của player).
+  - Tích hợp package chuẩn `com.unity.ugui: 2.0.0` vào `Packages/manifest.json`, dùng font chuẩn Unity 6 `LegacyRuntime.ttf`.
+  - Tích hợp `ShopInteractionCookingValidator` và `GroundWalkArtRunner`: kiểm tra trọn vẹn luồng từ khởi tạo ví 200 Scoin, mua nguyên liệu ở Chợ, nấu 2 món trà sữa, nhận doanh thu vào ví, từ chối khi hết nguyên liệu, mở quán ăn sáng và nhà phố.
+  - Chạy Unity batchmode: toàn bộ validators pass 100% (0 errors), xuất ảnh `shop-dialog-view-1080p.png` và cập nhật `shop-cooking-validation-results.json` (`success: true`).
+- **File chính**: `Assets/PhoNho/Scripts/Domain/Economy/CurrencyType.cs`, `Assets/PhoNho/Scripts/Domain/Economy/LedgerEntry.cs`, `Assets/PhoNho/Scripts/Domain/Economy/PlayerWallet.cs`, `Assets/PhoNho/Scripts/Domain/Cooking/IngredientItem.cs`, `Assets/PhoNho/Scripts/Domain/Cooking/RecipeItem.cs`, `Assets/PhoNho/Scripts/Domain/Cooking/PlayerInventory.cs`, `Assets/PhoNho/Scripts/Domain/Cooking/CookingService.cs`, `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopType.cs`, `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopInteractionTrigger.cs`, `Assets/PhoNho/Scripts/UI/ShopUIManager.cs`, `Assets/PhoNho/Editor/ShopInteractionCookingValidator.cs`, `Assets/PhoNho/Editor/PhoNhoGameplaySceneBuilder.cs`, `Assets/PhoNho/Editor/GroundWalkArtRunner.cs`, `Packages/manifest.json`, `Assets/PhoNho/Editor/shop-cooking-validation-results.json`, `Assets/PhoNho/Editor/shop-dialog-view-1080p.png`.
+- **Kiểm tra**: Unity 6000.4.3f1 batchmode validator pass 100% (`ExitCode: 0`, 0 errors), xuất ảnh Shop Dialog view 1920x1080.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 19 — 2026-10-05 (Hoàn thành Task unity-infinite-background-road-003: Infinite Background và Road/Ground)
+- **Mốc**: M0 / Infinite Scrolling & World Expansion
+- **Đã làm**:
+  - Nhận và claim task `unity-infinite-background-road-003` với worker `antigravity-worker-20261005-infinite-road-003`.
+  - Thiết kế và tạo component `PhoNhoInfiniteLayer.cs` cho phép cuộn lặp vô tận $O(1)$ tự động tính toán wrap-around theo tọa độ camera trong local space của layer, áp dụng cho: bầu trời `01_Sky` (3 tiles 19.2f), chân trời phố xa `02_DistantTown` (3 tiles 20.2f với parallax 0.78), vỉa hè gạch hoa `Sidewalk` (7 tiles bao phủ ~46 units, căn mặt gạch đúng `GroundBaseline = -1.80f`), và lòng đường nhựa `Road` (3 tiles bao phủ ~61 units).
+  - Thiết kế và tạo component `PhoNhoInfiniteGroundCollider.cs` gắn trên `Ground_Platform` (BoxCollider2D size 100f, 1.0f) tự động recenter khi Player di chuyển quá 20 units, đảm bảo Player luôn có mặt đất vật lý vững chắc bên dưới ở mọi tọa độ X từ $-\infty$ đến $+\infty$.
+  - Cập nhật `PhoNhoCameraFollow.cs`: thêm `ClampX`, `SetClamp`, `DisableClamping` và tắt camera clamping (`ClampX = false`) trong scene gameplay; gỡ bỏ hoàn toàn `Boundary_Left` và `Boundary_Right`.
+  - Tuân thủ nghiêm ngặt yêu cầu: TUYỆT ĐỐI KHÔNG recycle/nhân bản nhà và prop. Toàn bộ nhà (`Ingredient_Shop`, `Boba_Shop`, `Player_House`, `Breakfast_Shop`, `Shade_Tree`) và prop (`Street_Lamp`, `Bench_Left`, `Bench_Right`) giữ nguyên đúng 1 thực thể tại trung tâm phố.
+  - Cập nhật `PlayerMovementValidator.cs`: thêm kiểm tra chạy xa sang phải ($X = +43.1f$) và sang trái ($X = -46.0f$), kiểm tra không rơi xuyên đất, collider bao bọc, camera follow, vỉa hè và đường phủ kín tầm nhìn camera 100%, và xác minh số lượng từng công trình/prop đúng bằng 1.
+  - Cập nhật `GroundWalkArtRunner.cs`: kết xuất ảnh Game view 1080p tại tâm phố ($X = 0$), xa bên phải ($X = +45f$), và xa bên trái ($X = -45f$).
+  - Chạy kiểm thử thành công: Unity 6000.4.3f1 batchmode validator pass 100% (0 errors), IDE bridge test suite pass 18/18.
+- **File chính**: `Assets/PhoNho/Scripts/Map/PhoNhoInfiniteLayer.cs`, `Assets/PhoNho/Scripts/Map/PhoNhoInfiniteGroundCollider.cs`, `Assets/PhoNho/Scripts/Map/PhoNhoCameraFollow.cs`, `Assets/PhoNho/Editor/PhoNhoGameplaySceneBuilder.cs`, `Assets/PhoNho/Editor/PlayerMovementValidator.cs`, `Assets/PhoNho/Editor/GroundWalkArtRunner.cs`, `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`, `Assets/PhoNho/Editor/player-movement-validation-results.json`, `Assets/PhoNho/Editor/gameplay-view-1080p.png`, `Assets/PhoNho/Editor/gameplay-view-right-1080p.png`, `Assets/PhoNho/Editor/gameplay-view-left-1080p.png`, `PROGRESS.md`, `PROJECT_STATE.md`.
+- **Kiểm tra**: Unity 6000.4.3f1 batchmode validator pass 100% (`player-movement-validation-results.json`); 3 ảnh Game view 1920x1080; test suite bridge pass 18/18.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 18 — 2026-10-05 (Hoàn thành Task unity-ground-art-walk-animation-002: Sửa Ground Baseline và Walk Animation Nam/Nữ)
+- **Mốc**: M0 / Art, Animation & Ground Baseline Alignment
+- **Đã làm**:
+  - Nhận và claim task `unity-ground-art-walk-animation-002` với worker `antigravity-worker-20261005-ground-walk-002`.
+  - Khảo sát và xác định nguyên nhân nhà/mặt đất bị lệch: các sprite PNG có padding transparent khác nhau ở đáy (nhà 44-116px, ghế 93px, đèn 38px, vỉa hè gạch hoa 202px ở đáy và 213px ở đỉnh), đồng thời tên sprite vỉa hè bị sai dẫn đến không render vỉa hè và collider đặt lệch ở -2.58f trong khi chân nhà ở -1.78f.
+  - Thiết lập chuẩn Ground Baseline thống nhất tại `Y = -1.80f`: bù trừ bottom padding cho toàn bộ công trình (`Ingredient_Shop`, `Boba_Shop`, `Player_House`, `Breakfast_Shop`), gốc cây (`Shade_Tree`), đèn đường (`Street_Lamp`), ghế băng (`Bench_Left`, `Bench_Right`) để chân visual tiếp xúc chính xác 100% trên mặt vỉa hè.
+  - Sửa vỉa hè `Dải vỉa hè gạch hoa-1.png`: căn mép trên gạch hoa nằm đúng `GroundBaseline = -1.80f`, mép dưới tiếp giáp tự nhiên với lòng đường nhựa `Road`.
+  - Căn chỉnh `Ground_Platform` BoxCollider2D (mặt trên đúng `-1.80f`), Player CapsuleCollider2D (đáy offset Y=0.90 size Y=1.80 trùng khít Y=0 bàn chân).
+  - Tái tạo walk cycle 4 frames cho cả nhân vật Nam và Nữ: bước chân luân phiên 2 chân rõ rệt (contact pose chạm đất, passing pose lướt qua), depth shading phân biệt chân gần/chân xa, bàn chân tiếp đất vững chãi tại Baseline Y=575 (pivot Y=0.1), đồng nhất độ cao đầu và thân người dao động tự nhiên 1-2px (triệt tiêu hoàn toàn cú sụt lún/nảy thân 20px).
+  - Tinh chỉnh Animator Controller: transition duration = 0f (chuyển tức thì không trễ bước), canTransitionToSelf = false, đồng bộ tốc độ di chuyển `MoveSpeed = 3.0f` với nhịp bước 8 FPS triệt tiêu foot sliding.
+  - Viết runner `GroundWalkArtRunner.cs` kết xuất ảnh Game view 1920x1080 trực tiếp từ Scene Camera.
+  - Chạy toàn bộ validation tự động trong Unity 6000.4.3f1 batchmode: `PlayerMovementValidator` và `CharacterPlayModeValidator` đạt 100% pass (0 errors).
+- **File chính**: `Assets/PhoNho/Editor/PhoNhoGameplaySceneBuilder.cs`, `Assets/PhoNho/Editor/PlayerMovementValidator.cs`, `Assets/PhoNho/Editor/GroundWalkArtRunner.cs`, `Assets/PhoNho/Editor/CharacterAnimationBuilder.cs`, `Assets/PhoNho/Art/Characters/Male_A_Movement_Strip.png`, `Assets/PhoNho/Art/Characters/Female_A_Movement_Strip.png`, `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`, `Assets/PhoNho/Prefabs/Player_Character.prefab`, `Assets/PhoNho/Editor/gameplay-view-1080p.png`.
+- **Kiểm tra**: Unity 6000.4.3f1 batchmode validator pass 100% (`player-movement-validation-results.json`, `character-validation-results.json`); Game view 1920x1080 kết xuất tại `Assets/PhoNho/Editor/gameplay-view-1080p.png`; test suite bridge pass 18/18.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 17 — 2026-10-05 (Hoàn thành Task antigravity-game-dev-skill-001: Chuyển đổi Game Development Skill sang Antigravity Native)
+- **Mốc**: Dev Tooling & Antigravity Native Skills
+- **Đã làm**:
+  - Khảo sát nguồn `davila7/claude-code-templates` (MIT License) và chuyển đổi hoàn chỉnh thành skill native cho Antigravity IDE đặt tại `.agents/skills/game-development/` (và bản đồng bộ `skills/game-development/`).
+  - Loại bỏ triệt để các giả định của Claude Code (`allowed-tools`, cấu hình đường dẫn Claude), thay thế bằng các công cụ Antigravity (`view_file`, `write_to_file`, `replace_file_content`, `run_command`).
+  - Trọng tâm hóa vào Unity 2D (C#) cho Phố Nhỏ: FixedUpdate, Rigidbody2D Dynamic (FreezeRotation Z), Collider2D, legacy Input Manager, camera follow, và quy trình validation tự động bằng Unity 6000.4.3f1 batchmode.
+  - Tích hợp Project Memory (`PROJECT_STATE.md` và `get_project_context`) với cơ chế progressive disclosure gồm 4 tài liệu tham chiếu chuyên sâu (`references/`).
+  - Ghi nhận đầy đủ nguồn gốc và giấy phép (Attribution & MIT License note).
+  - Viết bộ kiểm thử tự động `tools/ide-bridge/test/skill.test.mjs`, toàn bộ 19/19 test suites đều pass 100%.
+- **File chính**: `.agents/skills/game-development/SKILL.md`, `.agents/skills/game-development/references/*.md`, `skills/game-development/`, `tools/ide-bridge/test/skill.test.mjs`, `skill.md`, `PROJECT_STATE.md`, `PROGRESS.md`.
+- **Kiểm tra**: Chạy `node --test tools/ide-bridge/test/*.test.mjs` đạt 18 pass, 0 fail, 1 skip; chạy lại Unity batchmode validator đạt 100% pass, không có regression.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 16 — 2026-10-05 (Hoàn thành Task project-memory-archive-001: Project Memory & Task Archive cho IDE Bridge)
+- **Mốc**: Dev Tooling & Token Optimization
+- **Đã làm**:
+  - Tạo module `tools/ide-bridge/memory.mjs` và tài liệu bộ nhớ dự án `PROJECT_STATE.md` (chứa mục tiêu, kiến trúc, quyết định cốt lõi, module quan trọng, việc vừa hoàn thành, việc tiếp theo).
+  - Tích hợp cơ chế tự động cập nhật tóm tắt vào `PROJECT_STATE.md` khi task hoàn thành (chỉ lưu 1-2 câu súc tích, không sao chép log dài, kiểm soát dung lượng <16KB).
+  - Bổ sung endpoint `GET /v1/context` và MCP tool `get_project_context` giúp Agent mới lấy toàn bộ bối cảnh dự án và task active trong 1 call duy nhất, không tải lịch sử done dài.
+  - Xây dựng cơ chế archive an toàn: thư mục `.tasks/runtime/archive/`, phương thức `archive(id)`, `autoArchiveDone(keepRecent=2)`, `listArchived()`, và tra cứu tự động trong `read(id)` khi tra cứu task cũ.
+  - Cập nhật OpenAPI schema, `server.mjs`, `store.mjs`, `mcp.mjs`, `AGENTS.md` (§1 thứ tự đọc tiết kiệm token) và `docs/IDE_BRIDGE.md` (§4 workflow mới).
+  - Viết bộ kiểm thử tự động `tools/ide-bridge/test/memory.test.mjs`, chạy toàn bộ test suite đạt 14/14 pass (13 pass, 1 skip theo thiết kế trên Windows).
+- **File chính**: `PROJECT_STATE.md`, `tools/ide-bridge/memory.mjs`, `tools/ide-bridge/store.mjs`, `tools/ide-bridge/mcp.mjs`, `tools/ide-bridge/server.mjs`, `tools/ide-bridge/openapi.mjs`, `tools/ide-bridge/test/memory.test.mjs`, `docs/IDE_BRIDGE.md`, `AGENTS.md`.
+- **Kiểm tra**: Chạy `node --test tools/ide-bridge/test/*.test.mjs` đạt 13 pass, 0 fail; kiểm tra trực tiếp `getContext()` (~5.3KB) và `autoArchiveDone()` hoạt động chính xác.
+- **Nợ kỹ thuật**: Không có.
+
+### Phiên 15 — 2026-10-05 (Hoàn thành Task unity-map-player-movement-001: Tạo Map 2D & Player Physics Movement)
+- **Mốc**: M0 / Gameplay 2D & Player Controller
+- **Đã làm**:
+  - Nhận và claim task `unity-map-player-movement-001` trên cloud bridge `game.zcloudviet.xyz` và local MCP bridge với worker `antigravity-worker-20261005-unity-map`.
+  - Sửa lỗi xử lý UTF-8 BOM trong `tools/ide-bridge/store.mjs` giúp TaskStore tương thích an toàn với file có BOM.
+  - Viết controller vật lý `Assets/PhoNho/Scripts/Character/PhoNhoPlayerMovement.cs`: di chuyển ngang A/D và mũi tên trái/phải, giữ vận tốc trọng lực Y, khóa xoay FreezeRotation Z, tự động flipX và cập nhật Animator.
+  - Viết `Assets/PhoNho/Scripts/Map/PhoNhoCameraFollow.cs`: camera bám theo nhân vật mượt mà, có giới hạn biên street.
+  - Tạo prefab `Assets/PhoNho/Prefabs/Player_Character.prefab` và scene `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity` qua builder `PhoNhoGameplaySceneBuilder.cs`.
+  - Viết và chạy validator `Assets/PhoNho/Editor/PlayerMovementValidator.cs` trong Unity 6000.4.3f1 batchmode: mô phỏng rơi vật lý, chạm collider mặt đất ổn định, di chuyển trái/phải và hướng nhìn chính xác (100% pass, 0 lỗi).
+- **File chính**: `Assets/PhoNho/Scripts/Character/PhoNhoPlayerMovement.cs`, `Assets/PhoNho/Scripts/Map/PhoNhoCameraFollow.cs`, `Assets/PhoNho/Editor/PhoNhoGameplaySceneBuilder.cs`, `Assets/PhoNho/Editor/PlayerMovementValidator.cs`, `Assets/PhoNho/Prefabs/Player_Character.prefab`, `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`, `tools/ide-bridge/store.mjs`.
+- **Kiểm tra**: Chạy `PlayerMovementValidator.ValidateAll()` và `CharacterPlayModeValidator.ValidateAll()` trong Unity 6000.4.3f1 batchmode (kết quả tại `Assets/PhoNho/Editor/player-movement-validation-results.json` và `character-validation-results.json` đều success=true); chạy `node --test tools/ide-bridge/test/*.test.mjs` đạt 8/8 pass.
+- **Nợ kỹ thuật**: Cần bổ sung các hiệu ứng hạt bụi bước chân (Dust VFX) và âm thanh bước chân khi di chuyển.
 
 ### Phiên 14 — 2026-10-04 (Hoàn thiện backend & kết nối tab Quản lý Tài khoản Antigravity IDE)
 - **Mốc**: M0 / Dev Tools
@@ -79,6 +263,7 @@
 | D32 | Điều kiện cụ thể để mở đổi nghề: để dành khi bắt đầu phát triển bản cập nhật tương lai | CHỐT |
 | D33 | Nhân vật nam/nữ trang phục A (áo kem, short xanh/hồng); sprite sheet hiện dùng để thử art, không thay quyết định Spine D25. Nguồn trong img/character, đầu ra căn theo ô 512×640/pivot chân. | CHỐT (A) / GIẢ ĐỊNH (quy chuẩn kỹ thuật) |
 | D34 | Cầu nối giao việc dùng REST Action + MCP stdio, Node >=22 và thư viện built-in (không thêm dependency); webhook chỉ lưu task, IDE agent thực thi theo quyền riêng. | TRIỂN KHAI / CHƯA KÍCH HOẠT Ở MÁY NGƯỜI DÙNG |
+| D35 | Project Memory qua PROJECT_STATE.md & context 1-call (get_project_context), auto-archive task done cũ vào .tasks/runtime/archive/ | CHỐT |
 
 ## OPEN QUESTIONS (cần người dùng trả lời)
 

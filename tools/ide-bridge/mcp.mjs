@@ -5,20 +5,26 @@ import { argumentsFor, rootFor } from './config.mjs';
 const str = { type: 'string' };
 const tools = [
   { name: 'list_tasks', description: 'List project task summaries. Does not execute tasks.', annotations: { readOnlyHint: true },
-    inputSchema: { type: 'object', properties: { status: { type: 'string', enum: ['pending', 'in_progress', 'blocked', 'done'] }, offset: { type: 'integer', minimum: 0 } }, additionalProperties: false } },
-  { name: 'get_task', description: 'Read one complete task and its IDE result.', annotations: { readOnlyHint: true },
+    inputSchema: { type: 'object', properties: { status: { type: 'string', enum: ['pending', 'in_progress', 'blocked', 'done', 'archived'] }, offset: { type: 'integer', minimum: 0 } }, additionalProperties: false } },
+  { name: 'get_task', description: 'Read one complete task and its IDE result (active or archived).', annotations: { readOnlyHint: true },
     inputSchema: { type: 'object', properties: { id: str }, required: ['id'], additionalProperties: false } },
   { name: 'claim_task', description: 'Claim a pending task. Use a unique worker ID for this IDE agent session. No code is run.', annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: { type: 'object', properties: { id: str, worker: str }, required: ['worker'], additionalProperties: false } },
   { name: 'report_result', description: 'Report done or blocked with actual validation evidence. Uses the revision from claim_task.', annotations: { readOnlyHint: false, destructiveHint: false },
     inputSchema: { type: 'object', properties: { id: str, worker: str, expected_revision: { type: 'integer' }, status: { type: 'string', enum: ['done', 'blocked'] }, summary: str,
-      changed_files: { type: 'array', items: str }, validation: { type: 'array', items: str }, commit: str }, required: ['id', 'worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation'], additionalProperties: false } }
+      changed_files: { type: 'array', items: str }, validation: { type: 'array', items: str }, commit: str }, required: ['id', 'worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation'], additionalProperties: false } },
+  { name: 'get_project_context', description: 'Get condensed project memory (PROJECT_STATE.md) and active tasks in 1 call to minimize token usage.', annotations: { readOnlyHint: true },
+    inputSchema: { type: 'object', properties: { include_pending: { type: 'boolean' }, include_in_progress: { type: 'boolean' } }, additionalProperties: false } },
+  { name: 'archive_task', description: 'Archive a completed (done) task to keep active queue lean.', annotations: { readOnlyHint: false, destructiveHint: false },
+    inputSchema: { type: 'object', properties: { id: str }, required: ['id'], additionalProperties: false } }
 ];
 export async function callTool(store, name, input) {
   if (name === 'list_tasks') { object(input, ['status', 'offset']); return store.list(input.status, input.offset ?? 0); }
   if (name === 'get_task') { object(input, ['id']); return { task: await store.read(input.id) }; }
   if (name === 'claim_task') return store.claim(input);
   if (name === 'report_result') { object(input, ['id', 'worker', 'expected_revision', 'status', 'summary', 'changed_files', 'validation', 'commit']); const { id, ...result } = input; return store.report(id, result); }
+  if (name === 'get_project_context') { object(input, ['include_pending', 'include_in_progress']); return store.getContext(input); }
+  if (name === 'archive_task') { object(input, ['id']); return store.archive(input.id); }
   throw new BridgeError(400, 'Unknown tool');
 }
 export function serveMcp(store, input = process.stdin, output = process.stdout) {

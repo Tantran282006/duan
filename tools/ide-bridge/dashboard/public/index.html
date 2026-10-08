@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Ambient Particle VFX Canvas -->
+  <canvas id="ambient-canvas"></canvas>
+
   <div class="app-layout">
     <!-- Desktop Sidebar -->
     <aside class="sidebar" id="sidebar">
@@ -69,6 +72,10 @@
         </div>
 
         <div class="header-right">
+          <button class="btn-icon btn-sound-toggle" id="btn-toggle-sound" title="Bật/Tắt hiệu ứng âm thanh Synthesizer" aria-label="Bật tắt âm thanh">
+            <span id="sound-icon">🔊</span>
+          </button>
+
           <button class="btn-secondary" id="btn-refresh" title="Làm mới dữ liệu">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             <span>Đồng bộ</span>
@@ -211,6 +218,11 @@
           <div class="search-box">
             <input type="text" id="plan-search" placeholder="Tìm kiếm task theo tên, ID, file..." />
           </div>
+
+          <button class="btn-primary" id="btn-open-create-task" style="display:flex;align-items:center;gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Tạo Task</span>
+          </button>
 
           <div class="view-switch-group">
             <button class="btn-toggle active" id="btn-view-kanban" title="Dạng Kanban">
@@ -378,9 +390,15 @@
             <h3>Danh sách Profiles Antigravity cục bộ</h3>
             <p class="section-sub">Quản lý các tài khoản chính chủ độc lập với user-data riêng. An toàn 100% trên 127.0.0.1.</p>
           </div>
-          <button class="btn-secondary" id="btn-open-add-profile">
-            <span>+ Thêm Profile</span>
-          </button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary" id="btn-open-settings" title="Cài đặt Quota & Cảnh báo">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Cài đặt</span>
+            </button>
+            <button class="btn-primary" id="btn-open-add-profile">
+              <span>+ Thêm Profile</span>
+            </button>
+          </div>
         </div>
 
         <!-- Profile Cards Grid -->
@@ -442,6 +460,13 @@
           <span class="worker-pill" id="drawer-worker-pill">Worker: none</span>
           <span class="rev-pill" id="drawer-rev-pill">Rev: 1</span>
         </div>
+        <div class="drawer-actions-bar" id="drawer-actions-bar" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+          <button class="btn-primary btn-mini" id="btn-drawer-claim">⚡ Nhận Task (Claim)</button>
+          <button class="btn-secondary btn-mini" id="btn-drawer-block">🛑 Báo Blocked</button>
+          <button class="btn-secondary btn-mini" id="btn-drawer-unclaim">⏳ Trả về Pending</button>
+          <button class="btn-primary highlight-btn btn-mini" id="btn-drawer-done">✅ Đánh dấu Hoàn thành</button>
+          <button class="btn-text danger-text btn-mini" id="btn-drawer-delete" style="color:#ef4444;margin-left:auto;">🗑️ Xóa Task</button>
+        </div>
       </div>
 
       <div class="drawer-section">
@@ -498,6 +523,128 @@
     </div>
   </div>
 
+  <!-- Add Profile Modal -->
+  <div class="modal-backdrop hidden" id="add-profile-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-icon">👤</span>
+        <h3>Thêm Profile Antigravity Cục Bộ</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new-profile-name">Tên hiển thị:</label>
+          <input type="text" id="new-profile-name" placeholder="Ví dụ: Tan FL Secondary" required />
+        </div>
+        <div class="form-group">
+          <label for="new-profile-email">Email Google liên kết:</label>
+          <input type="email" id="new-profile-email" placeholder="Ví dụ: tantran.fl@gmail.com" required />
+        </div>
+        <div class="form-group">
+          <label for="new-profile-quota">Quota ban đầu (%):</label>
+          <input type="number" id="new-profile-quota" min="0" max="100" value="100" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-add-profile">Hủy bỏ</button>
+        <button class="btn-primary" id="btn-confirm-add-profile">Lưu Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div class="modal-backdrop hidden" id="create-task-modal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <span class="modal-icon">📋</span>
+        <h3>Tạo Task Mới Vào Kế Hoạch</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new-task-id">Mã Task (ID):</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="new-task-id" placeholder="Ví dụ: unity-npc-spawner-005" required />
+            <button class="btn-secondary btn-mini" id="btn-gen-task-id" type="button">Sinh ID</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="new-task-title">Tiêu đề ngắn gọn:</label>
+          <input type="text" id="new-task-title" placeholder="Ví dụ: Triển khai hệ thống NPC Spawner trên phố" required />
+        </div>
+        <div class="form-group">
+          <label for="new-task-goal">Mục tiêu chi tiết:</label>
+          <textarea id="new-task-goal" rows="3" placeholder="Mô tả cụ thể mục tiêu cần đạt được..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="new-task-files">Files liên quan (mỗi dòng 1 đường dẫn tương đối):</label>
+          <textarea id="new-task-files" rows="2" placeholder="Assets/PhoNho/Scripts/Gameplay&#10;Assets/PhoNho/Editor"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="new-task-steps">Các bước thực hiện (mỗi dòng 1 bước):</label>
+          <textarea id="new-task-steps" rows="3" placeholder="Đọc thiết kế và Project Memory&#10;Viết code component&#10;Viết validator và kiểm thử"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="new-task-criteria">Tiêu chí nghiệm thu (Acceptance Criteria, mỗi dòng 1 tiêu chí):</label>
+          <textarea id="new-task-criteria" rows="3" placeholder="NPC xuất hiện đúng vị trí&#10;Validator batchmode pass 100% không lỗi"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-create-task">Hủy bỏ</button>
+        <button class="btn-primary" id="btn-submit-create-task">Tạo Task Mới</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop hidden" id="settings-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-icon">⚙️</span>
+        <h3>Cài đặt Quota & Cảnh báo</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="settings-threshold">Ngưỡng cảnh báo Quota thấp (%):</label>
+          <input type="number" id="settings-threshold" min="1" max="50" value="10" />
+          <span style="font-size:11px;color:var(--text-sub);display:block;margin-top:4px;">Banner cảnh báo sẽ xuất hiện khi quota của profile đang dùng giảm xuống dưới mức này.</span>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="settings-autoswitch" />
+            <span>Tự động gợi ý chuyển đổi khi phát hiện lỗi 429 / Quota</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-settings">Hủy bỏ</button>
+        <button class="btn-primary" id="btn-confirm-settings">Lưu Cài Đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete Task Modal -->
+  <div class="modal-backdrop hidden" id="complete-task-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-icon">✅</span>
+        <h3>Báo cáo Hoàn thành Task</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="complete-summary">Tóm tắt kết quả (Summary):</label>
+          <textarea id="complete-summary" rows="3" placeholder="Mô tả kết quả công việc đã hoàn thành..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="complete-validation">Bằng chứng kiểm thử (mỗi dòng 1 bằng chứng):</label>
+          <textarea id="complete-validation" rows="2" placeholder="Unit test pass 100%&#10;BatchMode exit code 0"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-complete">Hủy bỏ</button>
+        <button class="btn-primary highlight-btn" id="btn-confirm-complete">Xác nhận Hoàn thành</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mobile Bottom Navigation -->
   <nav class="mobile-nav">
     <button class="mob-item active" data-tab="overview">
@@ -517,6 +664,9 @@
       <span>Tài khoản</span>
     </button>
   </nav>
+
+  <!-- MAX VFX Modern Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>

@@ -1,0 +1,30 @@
+{
+  "id": "web-dashboard-max-vfx-ui-003",
+  "title": "Nâng cấp giao diện Web Dashboard đẳng cấp MAX VFX & Visual Polish đỉnh cao",
+  "goal": "Nâng cấp toàn diện giao diện Web Developer Dashboard (http://127.0.0.1:5050) lên chuẩn thiết kế MAX VFX, rich aesthetics, siêu mượt và sống động: 1) Canvas Ambient Particle VFX với các đốm sáng đèn lồng ấm áp trôi nhẹ tương tác chuột; 2) Glassmorphism v2 cao cấp kết hợp viền neon gradient phát sáng; 3) Micro-interactions & Ripple Effects trên các nút bấm; 4) Web Audio Synthesizer SFX tinh tế (tactile click, claim chime, success victory fanfare nhẹ) kèm nút bật/tắt âm thanh; 5) Animated Number Counters & Dynamic glowing progress bars; 6) Toast Notifications hệ thống với thanh thời gian progress bar; 7) Bảo toàn 100% chức năng thực tế hiện có và pass toàn bộ test.",
+  "files": [
+    "tools/ide-bridge/dashboard/public/index.html",
+    "tools/ide-bridge/dashboard/public/app.js",
+    "tools/ide-bridge/dashboard/public/styles.css",
+    "tools/ide-bridge/test/dashboard.test.mjs",
+    "tools/ide-bridge/test/e2e_smoke_test.mjs"
+  ],
+  "steps": [
+    "Khởi tạo và claim task web-dashboard-max-vfx-ui-003 trong TaskStore.",
+    "Nâng cấp styles.css với visual styling MAX VFX: Glassmorphism nâng cao, neon ambient glow, animated gradient border, ripple effect, card hover tilt/lift, status badge pulse.",
+    "Cập nhật index.html: Thêm canvas hạt sáng nền, nút bật/tắt Sound SFX trên top bar, toast notification host.",
+    "Cập nhật app.js: Tích hợp Ambient Canvas VFX, Web Audio Synthesizer SFX không dùng file ngoài, animated stats counters, ripple effects, toasts hiện đại.",
+    "Chạy E2E smoke test và test suite để xác thực mọi tính năng hoạt động mượt mà không lỗi.",
+    "Cập nhật PROGRESS.md, PROJECT_STATE.md và báo cáo hoàn thành qua MCP report_result."
+  ],
+  "acceptance_criteria": [
+    "Có Canvas Ambient Particles nền với chuyển động mượt mà, phản hồi chuột, hiệu ứng ánh sáng đèn lồng ấm áp.",
+    "Có Web Audio Synthesizer SFX cho các tương tác quan trọng (click, claim task, hoàn thành task, đổi tab) kèm nút Mute/Unmute lưu vào localStorage.",
+    "Hiệu ứng Ripple xuất hiện khi bấm các nút tương tác trên dashboard.",
+    "Các số liệu thống kê (Task count, quota) có animated counter tăng dần khi tải trang.",
+    "Card Kanban và Profile có hiệu ứng hover mượt mà với viền sáng neon tinh tế.",
+    "Toast notifications xuất hiện sinh động với thanh đếm ngược thời gian.",
+    "Toàn bộ chức năng thao tác (tạo task, claim, đổi trạng thái, xóa task, quản lý profile, kéo thả) vẫn hoạt động 100% chuẩn xác.",
+    "Tất cả các unit tests và E2E smoke test chạy pass 100% không có lỗi."
+  ]
+}

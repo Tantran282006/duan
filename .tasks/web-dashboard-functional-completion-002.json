@@ -1,0 +1,31 @@
+{
+  "id": "web-dashboard-functional-completion-002",
+  "title": "Hoàn thiện toàn bộ chức năng UI Web Dashboard không để mock/nút chết",
+  "goal": "Hoàn thiện toàn bộ UI Web Developer Dashboard (http://127.0.0.1:5050) thành chức năng sử dụng thật 100%: 1) Loại bỏ mọi nút chết và mock data; 2) Thêm modal và chức năng Tạo Task mới trực tiếp từ giao diện Web; 3) Thêm modal và chức năng Thêm Profile, Xóa Profile, Đổi Profile Antigravity an toàn; 4) Thêm nút thao tác Claim Task, Đổi trạng thái (Pending/In Progress/Blocked/Done), Xóa Task từ Drawer và hỗ trợ kéo thả Kanban Board thật; 5) Hoàn thiện form Cài đặt Quota & Cảnh báo; 6) Viết test tự động và smoke test end-to-end cho toàn bộ luồng.",
+  "files": [
+    "tools/ide-bridge/dashboard/public/index.html",
+    "tools/ide-bridge/dashboard/public/app.js",
+    "tools/ide-bridge/dashboard/public/styles.css",
+    "tools/ide-bridge/dashboard/server.mjs",
+    "tools/ide-bridge/test/dashboard.test.mjs"
+  ],
+  "steps": [
+    "Đọc Project Context và cấu trúc Dashboard hiện có.",
+    "Bổ sung các REST API trên server.mjs: POST /api/tasks (tạo task), PATCH/POST /api/tasks/:id/status (đổi trạng thái/claim), DELETE /api/tasks/:id (xóa task), DELETE /api/profiles/:id (xóa profile).",
+    "Bổ sung UI trên index.html: Modal Thêm Profile, Modal Tạo Task Mới, Modal Cài đặt Quota/Ngưỡng cảnh báo, Nút Action trong Task Drawer (Claim, Đổi trạng thái, Xóa task).",
+    "Cập nhật app.js: Kết nối tất cả các nút, lắng nghe sự kiện, xử lý form submit, kéo thả Kanban Drag & Drop cập nhật trạng thái thời gian thực, xóa/sửa profile thật.",
+    "Cập nhật CSS styles.css cho các modal, action buttons, form controls và trạng thái kéo thả đẹp mắt.",
+    "Mở rộng bộ test dashboard.test.mjs và chạy end-to-end smoke test xác nhận 100% chức năng hoạt động thật.",
+    "Cập nhật PROGRESS.md, PROJECT_STATE.md và báo cáo kết quả qua MCP report_result."
+  ],
+  "acceptance_criteria": [
+    "Nút + Thêm Profile (#btn-open-add-profile) mở modal thêm profile thật, gửi POST /api/profiles và hiển thị ngay trên danh sách.",
+    "Nút Xóa Profile cho phép xóa profile không hoạt động thật trên backend.",
+    "Có nút + Tạo Task trên tab Kế hoạch mở modal tạo task với đầy đủ trường, validate và lưu thành công vào TaskStore.",
+    "Trong Task Drawer có các nút chức năng thao tác thật: Claim Task, Đổi trạng thái (Pending/In Progress/Blocked/Done), Xóa Task.",
+    "Kanban board hỗ trợ kéo thả hoặc click action đổi trạng thái task lưu trực tiếp vào backend.",
+    "Các ô nhập tay Quota (+/- 5%, lưu %) hoạt động chuẩn xác không lỗi.",
+    "Không còn bất kỳ nút chết, mock data tĩnh hay chức năng giả lập nào trên toàn bộ UI.",
+    "Toàn bộ test suite chạy pass 100% không có lỗi."
+  ]
+}

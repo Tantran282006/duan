@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import os from 'node:os';
 import { createDashboardServer } from '../dashboard/server.mjs';
 import {
@@ -168,3 +169,176 @@ test('dashboard server: security, overview, manual quota adjustment and profile 
   assert.equal(indexRes.status, 200);
   assert.ok(indexRes.headers.get('content-type').includes('text/html'));
 });
+
+test('dashboard server: task creation, claiming, status transition, delete and profile deletion', async (t) => {
+  const root = await fixture(t);
+  const env = { BRIDGE_PUBLIC_URL: 'https://game.zcloudviet.xyz' };
+  const server = createDashboardServer(root, env);
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+
+  const port = server.address().port;
+  const base = `http://127.0.0.1:${port}`;
+
+  // 1. Create Task via POST /api/tasks
+  const newTaskRes = await fetch(`${base}/api/tasks`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: 'dashboard-test-task-01',
+      title: 'Task kiểm thử tạo từ web dashboard',
+      goal: 'Kiểm tra toàn bộ luồng tạo và thao tác task từ Web Dashboard',
+      files: ['tools/ide-bridge/dashboard/server.mjs'],
+      steps: ['Bước 1: Tạo task', 'Bước 2: Claim', 'Bước 3: Hoàn thành'],
+      acceptance_criteria: ['Nghiệm thu pass 100%']
+    })
+  });
+  const newTaskData = await newTaskRes.json();
+  assert.equal(newTaskRes.status, 201);
+  assert.equal(newTaskData.created, true);
+  assert.equal(newTaskData.task.id, 'dashboard-test-task-01');
+  assert.equal(newTaskData.task.status, 'pending');
+
+  // Verify task appears in GET /api/tasks
+  const getTasksRes = await fetch(`${base}/api/tasks`);
+  const getTasksData = await getTasksRes.json();
+  const createdTask = getTasksData.tasks.find(tk => tk.id === 'dashboard-test-task-01');
+  assert.ok(createdTask, 'Task vừa tạo phải có trong danh sách');
+  assert.equal(createdTask.status, 'pending');
+
+  // 2. Claim Task via POST /api/tasks/:id/claim
+  const claimRes = await fetch(`${base}/api/tasks/dashboard-test-task-01/claim`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ worker: 'dashboard-worker-test' })
+  });
+  assert.equal(claimRes.status, 200);
+  const claimData = await claimRes.json();
+  assert.equal(claimData.task.status, 'in_progress');
+  assert.equal(claimData.task.worker, 'dashboard-worker-test');
+
+  // 3. Status transition via POST /api/tasks/:id/status
+  // In Progress -> Blocked
+  const blockRes = await fetch(`${base}/api/tasks/dashboard-test-task-01/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'blocked', reason: 'Chờ thiết kế từ UI team' })
+  });
+  assert.equal(blockRes.status, 200);
+  const blockData = await blockRes.json();
+  assert.equal(blockData.task.status, 'blocked');
+
+  // Blocked -> Pending (Unclaim)
+  const unclaimRes = await fetch(`${base}/api/tasks/dashboard-test-task-01/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'pending' })
+  });
+  assert.equal(unclaimRes.status, 200);
+  const unclaimData = await unclaimRes.json();
+  assert.equal(unclaimData.task.status, 'pending');
+  assert.equal(unclaimData.task.worker, null);
+
+  // Pending -> Done
+  const doneRes = await fetch(`${base}/api/tasks/dashboard-test-task-01/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      status: 'done',
+      summary: 'Task hoàn thành từ smoke test',
+      validation: ['Unit test pass', 'E2E smoke test pass']
+    })
+  });
+  assert.equal(doneRes.status, 200);
+  const doneData = await doneRes.json();
+  assert.equal(doneData.task.status, 'done');
+  assert.ok(doneData.task.result);
+
+  // 4. Delete Task via DELETE /api/tasks/:id
+  const deleteRes = await fetch(`${base}/api/tasks/dashboard-test-task-01`, {
+    method: 'DELETE'
+  });
+  assert.equal(deleteRes.status, 200);
+  const deleteData = await deleteRes.json();
+  assert.equal(deleteData.ok, true);
+
+  // Verify task deleted from runtime
+  const getTasksAfterDel = await fetch(`${base}/api/tasks`);
+  const getTasksAfterDelData = await getTasksAfterDel.json();
+  assert.equal(getTasksAfterDelData.tasks.some(tk => tk.id === 'dashboard-test-task-01'), false);
+
+  // 5. Add and Delete Profile
+  const addProfileRes = await fetch(`${base}/api/profiles`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Test Secondary Profile',
+      email: 'secondary.test@gmail.com',
+      quotaRemaining: 95
+    })
+  });
+  assert.equal(addProfileRes.status, 201);
+  const addProfileData = await addProfileRes.json();
+  const createdProfileId = addProfileData.profile.id;
+
+  // Cannot delete active profile
+  const delActiveRes = await fetch(`${base}/api/profiles/profile-main`, {
+    method: 'DELETE'
+  });
+  assert.equal(delActiveRes.status, 400);
+
+  // Delete non-active profile
+  const delProfileRes = await fetch(`${base}/api/profiles/${createdProfileId}`, {
+    method: 'DELETE'
+  });
+  assert.equal(delProfileRes.status, 200);
+  const delProfileData = await delProfileRes.json();
+  assert.equal(delProfileData.profile.id, createdProfileId);
+
+  // 6. Settings
+  const settingsRes = await fetch(`${base}/api/profiles/settings`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      quotaThresholdPercent: 15,
+      autoSwitch: true
+    })
+  });
+  assert.equal(settingsRes.status, 200);
+  const settingsData = await settingsRes.json();
+  assert.equal(settingsData.settings.quotaThresholdPercent, 15);
+  assert.equal(settingsData.settings.autoSwitch, true);
+});
+
+test('MAX VFX UI: visual elements, ambient canvas, sound synth and toast subsystems', async () => {
+  const baseDir = fsSync.existsSync(path.resolve('tools/ide-bridge/dashboard/public/index.html'))
+    ? path.resolve('tools/ide-bridge/dashboard/public')
+    : (fsSync.existsSync(path.resolve('dashboard/public/index.html')) ? path.resolve('dashboard/public') : path.resolve('../dashboard/public'));
+  const htmlPath = path.join(baseDir, 'index.html');
+  const cssPath = path.join(baseDir, 'styles.css');
+  const jsPath = path.join(baseDir, 'app.js');
+
+  const html = await fs.readFile(htmlPath, 'utf8');
+  const css = await fs.readFile(cssPath, 'utf8');
+  const js = await fs.readFile(jsPath, 'utf8');
+
+  // 1. HTML visual structure
+  assert.ok(html.includes('id="ambient-canvas"'), 'index.html phải có canvas #ambient-canvas');
+  assert.ok(html.includes('id="btn-toggle-sound"'), 'index.html phải có nút toggle sound');
+  assert.ok(html.includes('id="toast-container"'), 'index.html phải có container #toast-container');
+
+  // 2. CSS MAX VFX tokens and keyframe animations
+  assert.ok(css.includes('#ambient-canvas'), 'styles.css phải có style cho #ambient-canvas');
+  assert.ok(css.includes('.toast-container') && css.includes('.toast-item'), 'styles.css phải có style cho toasts');
+  assert.ok(css.includes('.ripple-wave') && css.includes('rippleEffect'), 'styles.css phải có hiệu ứng ripple');
+  assert.ok(css.includes('shimmerSweep'), 'styles.css phải có animation shimmer');
+  assert.ok(css.includes('pulseGlowBadge'), 'styles.css phải có animation pulse badge');
+
+  // 3. JavaScript subsystems
+  assert.ok(js.includes('SoundSynth ='), 'app.js phải có module SoundSynth');
+  assert.ok(js.includes('initAmbientCanvas()'), 'app.js phải có hàm initAmbientCanvas');
+  assert.ok(js.includes('showToast('), 'app.js phải có hàm showToast');
+  assert.ok(js.includes('animateNumber('), 'app.js phải có hàm animateNumber');
+  assert.ok(js.includes('setupRippleEffects()'), 'app.js phải có hàm setupRippleEffects');
+});
+

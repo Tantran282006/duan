@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start IDE Auto Worker",
+      "type": "shell",
+      "command": "node",
+      "args": ["tools/ide-bridge/worker.mjs"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

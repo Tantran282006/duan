@@ -71,11 +71,21 @@ Bridge hiện đã được triển khai LIVE 24/7 trên ZCloudViet tại `https
    - Trong giao diện Action Test, bấm Test cho `getBridgeHealth`: phản hồi phải trả về HTTP 200 `{"ok": true, "service": "Pho Nho IDE Task Bridge", "version": "0.1.0"}`.
    - Thử nghiệm gửi task mẫu và đọc lại bằng `getProjectTask`.
 
-## 4. Quy trình hằng ngày
+## 4. Quy trình hằng ngày & Tiết kiệm Token cho Agent
 
+### Quy trình tiết kiệm token cho Agent mới (Token-saving Workflow):
+1. **Lấy bối cảnh 1-call**: Khi bắt đầu phiên, Agent gọi MCP tool `get_project_context` (hoặc đọc trực tiếp file `PROJECT_STATE.md`). Endpoint này trả về toàn bộ memory dự án (mục tiêu, kiến trúc, file quan trọng, tóm tắt tính năng gần đây) cùng các task đang active (`pending` và `in_progress`). Mặc định hoàn toàn không tải lịch sử các task đã done để tiết kiệm tối đa token.
+2. **Nhận việc**: Agent claim task cần làm bằng `claim_task` (hoặc xem task pending từ context).
+3. **Thực hiện & Kiểm thử**: Chỉ mở các file liên quan trực tiếp, code và chạy kiểm thử tự động xác thực.
+4. **Báo cáo & Tự động cập nhật**: Agent gọi `report_result`. Hệ thống tự động:
+   - Trích xuất tóm tắt kết quả (1-2 câu súc tích) vào mục hoàn thành của `PROJECT_STATE.md`.
+   - Tự động archive an toàn các task done cũ vào thư mục `.tasks/runtime/archive/` để giữ hàng đợi luôn gọn gàng.
+5. **Tra cứu lịch sử**: Khi cần kiểm tra lại task cũ, Agent chỉ cần gọi `get_task` với ID (hệ thống tự động tìm cả trong hàng đợi active lẫn thư mục archive) hoặc `list_tasks(status: 'archived')`.
+
+### Quy trình làm việc giữa Custom GPT và IDE:
 1. Chốt yêu cầu ở Custom GPT, yêu cầu “Gửi task này vào dự án cho IDE”.
 2. GPT gọi `submitProjectTask`; kiểm tra ID trả về trước khi nói đã gửi.
-3. Trong Antigravity gọi agent “Lấy task pending tiếp theo bằng MCP và triển khai theo AGENTS.md”.
+3. Trong Antigravity gọi agent: “Lấy bối cảnh dự án bằng get_project_context và nhận task active tiếp theo”.
 4. Agent claim, làm việc và kiểm tra thực tế; cập nhật PROGRESS.md, rồi report done/blocked kèm file, kiểm tra và commit SHA nếu có.
 5. GPT dùng `getProjectTask` để đọc kết quả. Khi làm tiếp trong cuộc trò chuyện ChatGPT hiện tại qua GitHub, commit/push code và PROGRESS.md để kết quả được đồng bộ.
 

@@ -1,0 +1,31 @@
+{
+  "id": "unity-shop-interaction-cooking-flow-004",
+  "title": "Tương tác cửa hàng trên phố và luồng chế biến món ăn/trà sữa (Shop Interaction & Cooking Flow)",
+  "goal": "Triển khai tính năng tương tác với các cửa hàng trên phố (Boba_Shop, Breakfast_Shop, Ingredient_Shop, Player_House) trong scene CityOverworld_PlayerMovement.unity: khi nhân vật lại gần công trình xuất hiện prompt tương tác (phím E / nút chạm UI); mở popup giao diện quản lý tương ứng cho từng loại cửa hàng; triển khai luồng kinh tế & chế biến (mua nguyên liệu tại Ingredient Shop, chọn công thức và chế biến/pha chế tại Boba Shop và Breakfast Shop, kiểm tra trừ nguyên liệu và cộng thành phẩm/Scoin). Viết bộ kiểm thử tự động xác thực toàn bộ flow trong Unity batchmode.",
+  "files": [
+    "Assets/PhoNho/Scripts/Domain",
+    "Assets/PhoNho/Scripts/UI",
+    "Assets/PhoNho/Scripts/Gameplay",
+    "Assets/PhoNho/Editor",
+    "Assets/PhoNho/Scenes"
+  ],
+  "steps": [
+    "Đọc Project Memory (PROJECT_STATE.md) và thiết kế game trong game.md về nghề, công thức, cửa hàng, nguyên liệu.",
+    "Thiết kế tầng Domain: Model nguyên liệu (Ingredient), công thức (Recipe), kho đồ (Inventory), sổ cái/ví tiền (Wallet/Ledger).",
+    "Thiết kế tương tác phố: Component Trigger / Proximity detector cho các cửa hàng trên phố (Ingredient_Shop, Boba_Shop, Breakfast_Shop, Player_House) hiển thị prompt 'Nhấn [E] để vào quán'.",
+    "Thiết kế giao diện UI trong scene: Canvas UI responsive 16:9 với HUD tiền tệ (Scoin, Gem, Tcoin), Interaction Prompt và Panel Quản lý / Chế biến (Tab Menu món, Yêu cầu nguyên liệu, Nút Chế biến, Thanh tiến độ thời gian thực, Mua sỉ nguyên liệu).",
+    "Kết nối luồng Cooking Flow: Player mua nguyên liệu -> vào tiệm Trà sữa / Ăn sáng -> bấm chế biến -> kiểm tra đủ nguyên liệu -> nấu -> hoàn tất nhận thành phẩm và Scoin thưởng.",
+    "Kiểm tra Play Mode và viết bộ Validator tự động (ShopInteractionCookingValidator) kiểm tra trọn vẹn luồng tương tác, mua hàng, chế biến, hoàn tất trong Unity batchmode 6000.4.3f1.",
+    "Kết xuất ảnh chụp Game view màn hình tương tác và popup chế biến để nghiệm thu trực quan.",
+    "Cập nhật PROGRESS.md, PROJECT_STATE.md và báo cáo kết quả qua MCP report_result."
+  ],
+  "acceptance_criteria": [
+    "Nhân vật đi đến gần cửa hàng xuất hiện prompt tương tác rõ ràng; bấm phím E hoặc nút chạm mở đúng giao diện của quán đó.",
+    "Cửa hàng Nguyên liệu cho phép mua nguyên liệu (Trà, Sữa, Trân châu, Đường, Bột mì, Trứng) bằng Scoin có kiểm tra số dư.",
+    "Quán Trà sữa và Quán Ăn sáng hiển thị danh sách công thức, nguyên liệu cần, cho phép bấm chế biến khi đủ nguyên liệu.",
+    "Quá trình chế biến có thanh tiến độ / thời gian nấu và tự động hoàn thành, cộng món/Scoin vào tài khoản.",
+    "Toàn bộ thay đổi tiền tệ và tồn kho tuân thủ nguyên tắc server-authoritative / domain ledger có kiểm tra hợp lệ.",
+    "Khi đóng popup, nhân vật tiếp tục di chuyển và hoạt động bình thường, không bị kẹt input.",
+    "Bộ kiểm thử tự động chạy qua 100% trong Unity batchmode không có lỗi mới."
+  ]
+}

@@ -1,0 +1,48 @@
+{
+    "success": true,
+    "timestamp": "2026-10-05T16:13:29.8538624Z",
+    "prefabChecks": [
+        "Rigidbody2D: dynamic=True, freezeRotation=True, gravityScale=2, collisionMode=Continuous",
+        "Collider2D: type=CapsuleCollider2D, isTrigger=False, boundsSize=(0.00, 0.00, 0.00)",
+        "PhoNhoPlayerMovement: moveSpeed=3",
+        "SpriteRenderer: sprite=Male_A_Idle_Strip_0, sortingOrder=25",
+        "Animator: controller=Male_A_Controller"
+    ],
+    "sceneChecks": [
+        "Camera: orthographic=True, size=5,4, hasCameraFollow=True",
+        "Ground_Platform: position=(0.00, -1.80, 0.00), collider=BoxCollider2D, isTrigger=False, bounds=Center: (0.00, -2.30, 0.00), Extents: (50.00, 0.50, 0.00)",
+        "Sidewalk_01 visual surface found.",
+        "Player_Character instance found at position=(0.00, -1.00, 0.00)",
+        "Clip Male_A_Walk: frames=4, sampleRate=8, loopTime=True",
+        "Clip Female_A_Walk: frames=4, sampleRate=8, loopTime=True"
+    ],
+    "physicsSimulation": [
+        "Spawn: Player Y=-0,60, Ground Surface Y=-1,80",
+        "Landed after fall: Player Y=-1,80, Z-Rotation=0,00 deg",
+        "Move Right: Start X=0,00, End X=1,42, flipX=False (expected false)",
+        "Move Left: End X=-1,42, flipX=True (expected true)",
+        "Post-Movement Physics: Player Y=-1,80, Z-Rotation=0,00 deg"
+    ],
+    "infiniteWorldChecks": [
+        "CameraFollow ClampX=False (phải là false để di chuyển vô tận).",
+        "Entity Ingredient_Shop: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Boba_Shop: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Player_House: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Breakfast_Shop: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Shade_Tree: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Street_Lamp: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Bench_Left: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Entity Bench_Right: count=1 (yêu cầu đúng 1, không được nhân bản)",
+        "Run Far Right: Player reached X=43,1, Y=-1,80, Camera X=43,1, Ground Bounds=[-7,2..92,8]",
+        "Sidewalk_Container coverage at camX=43,1: minTileX=0,0, maxTileX=89,0 (view: [33,5..52,7])",
+        "Road_Container coverage at camX=43,1: minTileX=20,4, maxTileX=61,1 (view: [33,5..52,7])",
+        "Run Far Left: Player reached X=-46,0, Y=-1,80, Camera X=-46,0, Ground Bounds=[-95,7..4,3]",
+        "Sidewalk_Container coverage at camX=-46,0: minTileX=-89,0, maxTileX=0,0 (view: [-55,6..-36,4])",
+        "Road_Container coverage at camX=-46,0: minTileX=-61,1, maxTileX=-20,4 (view: [-55,6..-36,4])"
+    ],
+    "regressionChecks": [
+        "Scene Character_Preview.unity: exists=True",
+        "Scene CityOverworld_ArtLayout.unity: exists=True"
+    ],
+    "errors": []
+}

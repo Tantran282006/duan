@@ -76,12 +76,15 @@ async function atomic(file, value) {
   finally { await fs.rm(temp, { force: true }); }
 }
 
+import { updateProjectMemoryWithTask, getProjectContext } from './memory.mjs';
+
 export class TaskStore {
   constructor(root) {
     this.root = root;
     this.dir = (process.env.DATA_DIR && process.env.NODE_ENV === 'production')
       ? path.join(process.env.DATA_DIR, 'runtime')
       : path.join(root, '.tasks', 'runtime');
+    this.archiveDir = path.join(this.dir, 'archive');
   }
   async init() {
     try {
@@ -89,6 +92,7 @@ export class TaskStore {
         await safeDirectory(path.join(this.root, '.tasks'));
       }
       await safeDirectory(this.dir);
+      await safeDirectory(this.archiveDir);
     } catch (err) {
       // If DATA_DIR or root/.tasks is not writable, fallback to local or temp directory
       try {
@@ -96,10 +100,14 @@ export class TaskStore {
         await safeDirectory(path.join(this.root, '.tasks'));
         await safeDirectory(fallback);
         this.dir = fallback;
+        this.archiveDir = path.join(this.dir, 'archive');
+        await safeDirectory(this.archiveDir);
       } catch {
         const tmp = path.join(process.platform === 'win32' ? (process.env.TEMP || '.') : '/tmp', 'tasks', 'runtime');
         await fs.mkdir(tmp, { recursive: true });
         this.dir = tmp;
+        this.archiveDir = path.join(this.dir, 'archive');
+        await fs.mkdir(this.archiveDir, { recursive: true });
       }
     }
     return this;
@@ -116,16 +124,57 @@ export class TaskStore {
   }
   async read(id) {
     const file = path.join(this.dir, taskId(id) + '.json');
-    await safeFile(file);
-    try { return JSON.parse(await fs.readFile(file, 'utf8')); }
-    catch (e) { if (e.code === 'ENOENT') throw new BridgeError(404, 'Task not found'); throw e; }
+    try {
+      await safeFile(file);
+      const text = await fs.readFile(file, 'utf8');
+      return JSON.parse(text.replace(/^\uFEFF/, ''));
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        const archiveFile = path.join(this.archiveDir, taskId(id) + '.json');
+        try {
+          await safeFile(archiveFile);
+          const archText = await fs.readFile(archiveFile, 'utf8');
+          const archTask = JSON.parse(archText.replace(/^\uFEFF/, ''));
+          archTask.is_archived = true;
+          return archTask;
+        } catch (archErr) {
+          if (archErr.code === 'ENOENT') throw new BridgeError(404, 'Task not found');
+          throw archErr;
+        }
+      }
+      throw e;
+    }
   }
   async all() {
     const names = (await fs.readdir(this.dir)).filter(n => /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.json$/.test(n));
     const tasks = await Promise.all(names.map(n => this.read(n.slice(0, -5))));
-    return tasks.sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+    return tasks.sort((a, b) => (a.created_at || '').localeCompare(b.created_at || '') || (a.id || '').localeCompare(b.id || ''));
+  }
+  async listArchived(offset = 0) {
+    if (!Number.isSafeInteger(offset) || offset < 0) fail('Invalid offset');
+    const names = (await fs.readdir(this.archiveDir).catch(() => []))
+      .filter(n => /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.json$/.test(n));
+    const tasks = await Promise.all(names.map(n => this.read(n.slice(0, -5))));
+    tasks.sort((a, b) => b.updated_at.localeCompare(a.updated_at) || b.id.localeCompare(a.id));
+    return {
+      tasks: tasks.slice(offset, offset + 50).map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        revision: t.revision,
+        worker: t.worker,
+        created_at: t.created_at,
+        updated_at: t.updated_at,
+        result_summary: t.result?.summary?.slice(0, 300) ?? null,
+        is_archived: true
+      })),
+      next_offset: offset + 50 < tasks.length ? offset + 50 : null
+    };
   }
   async list(status, offset = 0) {
+    if (status === 'archived') {
+      return this.listArchived(offset);
+    }
     if (status && !['pending', 'in_progress', 'blocked', 'done'].includes(status)) fail('Invalid status');
     if (!Number.isSafeInteger(offset) || offset < 0) fail('Invalid offset');
     const tasks = (await this.all()).filter(t => !status || t.status === status);
@@ -137,6 +186,76 @@ export class TaskStore {
     // JSON is authoritative; Markdown is a view, never an instruction executor.
     await atomic(path.join(this.dir, t.id + '.json'), JSON.stringify(t, null, 2) + '\n');
     await atomic(path.join(this.dir, t.id + '.md'), markdown(t));
+  }
+  async archive(id) {
+    taskId(id);
+    return this.locked(async () => {
+      const activeJson = path.join(this.dir, id + '.json');
+      const activeMd = path.join(this.dir, id + '.md');
+      const archJson = path.join(this.archiveDir, id + '.json');
+      const archMd = path.join(this.archiveDir, id + '.md');
+
+      let t;
+      try {
+        t = await this.read(id);
+      } catch (e) {
+        if (e.status === 404) throw new BridgeError(404, 'Task not found');
+        throw e;
+      }
+
+      if (t.is_archived) {
+        return { archived: false, already_archived: true, task: t };
+      }
+
+      if (t.status !== 'done') {
+        throw new BridgeError(400, 'Only completed tasks (status=done) can be archived');
+      }
+
+      await atomic(archJson, JSON.stringify(t, null, 2) + '\n');
+      try {
+        const mdText = await fs.readFile(activeMd, 'utf8');
+        await atomic(archMd, mdText);
+      } catch {}
+
+      await fs.rm(activeJson, { force: true });
+      await fs.rm(activeMd, { force: true });
+
+      t.is_archived = true;
+      return { archived: true, task: t };
+    });
+  }
+  async autoArchiveDone(keepRecent = 2) {
+    const allActive = await this.all();
+    const doneTasks = allActive.filter(t => t.status === 'done');
+    if (doneTasks.length <= keepRecent) {
+      return { archived_count: 0 };
+    }
+
+    doneTasks.sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+    const toArchive = doneTasks.slice(keepRecent);
+
+    let count = 0;
+    for (const t of toArchive) {
+      const activeJson = path.join(this.dir, t.id + '.json');
+      const activeMd = path.join(this.dir, t.id + '.md');
+      const archJson = path.join(this.archiveDir, t.id + '.json');
+      const archMd = path.join(this.archiveDir, t.id + '.md');
+
+      await atomic(archJson, JSON.stringify(t, null, 2) + '\n');
+      try {
+        const mdText = await fs.readFile(activeMd, 'utf8');
+        await atomic(archMd, mdText);
+      } catch {}
+
+      await fs.rm(activeJson, { force: true });
+      await fs.rm(activeMd, { force: true });
+      count++;
+    }
+
+    return { archived_count: count };
+  }
+  async getContext(options = {}) {
+    return getProjectContext(this.root, this, options);
   }
   async submit(input) {
     const data = validateTask(input);
@@ -164,9 +283,34 @@ export class TaskStore {
       let t = input.id ? await this.read(input.id) : (await this.all()).find(t => t.status === 'pending');
       if (!t) return { task: null };
       if (t.status === 'in_progress' && t.worker === worker) return { task: t };
-      if (!['pending', 'blocked'].includes(t.status)) throw new BridgeError(409, 'Task already claimed or completed');
+      
+      // Lease timeout check: if in_progress for > 10 minutes, allow recovery
+      const isStaleLease = t.status === 'in_progress' && (Date.now() - new Date(t.updated_at || t.created_at).getTime() > 600000);
+      if (!['pending', 'blocked'].includes(t.status) && !isStaleLease) throw new BridgeError(409, 'Task already claimed or completed');
+      
       t.status = 'in_progress'; t.worker = worker; t.revision++; t.updated_at = new Date().toISOString();
       await this.save(t); return { task: t };
+    });
+  }
+  async recoverStaleTasks(timeoutMs = 600000) {
+    return this.locked(async () => {
+      const allTasks = await this.all();
+      const now = Date.now();
+      const recovered = [];
+      for (const t of allTasks) {
+        if (t.status === 'in_progress') {
+          const elapsed = now - new Date(t.updated_at || t.created_at).getTime();
+          if (elapsed > timeoutMs) {
+            t.status = 'pending';
+            t.worker = null;
+            t.revision++;
+            t.updated_at = new Date().toISOString();
+            await this.save(t);
+            recovered.push(t.id);
+          }
+        }
+      }
+      return recovered;
     });
   }
   async report(id, input) {
@@ -184,7 +328,14 @@ export class TaskStore {
       if (t.status === input.status && t.revision === input.expected_revision + 1 && JSON.stringify(t.result) === JSON.stringify(result)) return { task: t };
       if (t.status !== 'in_progress' || t.revision !== input.expected_revision) throw new BridgeError(409, 'Stale revision or task not in progress');
       t.status = input.status; t.result = result; t.revision++; t.updated_at = new Date().toISOString();
-      await this.save(t); return { task: t };
+      await this.save(t);
+      if (t.status === 'done') {
+        try {
+          await updateProjectMemoryWithTask(this.root, t);
+          await this.autoArchiveDone(2);
+        } catch {}
+      }
+      return { task: t };
     });
   }
 }

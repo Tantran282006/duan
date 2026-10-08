@@ -134,7 +134,7 @@ test('end to end: REST submission, MCP stdio claim/result, REST retrieval', asyn
   const init = await rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } });
   assert.equal(init.result.protocolVersion, '2025-06-18');
   child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
-  assert.equal((await rpc('tools/list', {})).result.tools.length, 4);
+  assert.equal((await rpc('tools/list', {})).result.tools.length, 6);
   const response = await rpc('tools/call', { name: 'claim_task', arguments: { worker: 'mcp-test-session' } });
   const claimed = JSON.parse(response.result.content[0].text).task;
   const report = await rpc('tools/call', { name: 'report_result', arguments: { id: claimed.id, worker: claimed.worker,

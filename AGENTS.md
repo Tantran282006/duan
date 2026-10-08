@@ -5,9 +5,10 @@
 ## 1. Thứ tự đọc khi bắt đầu phiên (tiết kiệm token)
 
 1. Đọc `AGENTS.md` (file này).
-2. Đọc `PROGRESS.md` **phần "TRẠNG THÁI HIỆN TẠI" và "VIỆC TIẾP THEO" trước**. Chỉ đọc nhật ký cũ khi cần.
-3. Chỉ đọc `GAME_PROMPT.md` **đúng mục liên quan** đến việc đang làm (dùng mục lục: §4 nghề, §5 kinh tế, §6 đánh giá, §7 bá khí, §10 kỹ thuật). Không đọc cả file mỗi phiên.
-4. Chỉ mở file code liên quan. **Không quét toàn bộ repo**, không cat file lớn; dùng tìm kiếm có mục tiêu.
+2. Đọc `PROJECT_STATE.md` (hoặc gọi MCP tool `get_project_context` một lần) để nắm toàn bộ mục tiêu, kiến trúc, quyết định chốt và các task đang active.
+3. Đọc `PROGRESS.md` **phần "TRẠNG THÁI HIỆN TẠI" và "VIỆC TIẾP THEO" trước**. Chỉ đọc nhật ký cũ khi cần.
+4. Chỉ đọc `GAME_PROMPT.md` **đúng mục liên quan** đến việc đang làm (dùng mục lục: §4 nghề, §5 kinh tế, §6 đánh giá, §7 bá khí, §10 kỹ thuật). Không đọc cả file mỗi phiên.
+5. Chỉ mở file code liên quan. **Không quét toàn bộ repo**, không cat file lớn; dùng tìm kiếm có mục tiêu.
 
 ## 2. Nguyên tắc thiết kế không được vi phạm
 
