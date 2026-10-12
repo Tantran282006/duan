@@ -1,6 +1,6 @@
 {
     "success": true,
-    "timestamp": "2026-10-09T15:04:04.8688725Z",
+    "timestamp": "2026-10-12T12:32:46.7402024Z",
     "setupChecks": [
         "GameSystem Setup: wallet=True, inventory=True, cooking=True, uiManager=True",
         "Shop Triggers found in scene: count=4 (yêu cầu đúng 4 công trình)",
