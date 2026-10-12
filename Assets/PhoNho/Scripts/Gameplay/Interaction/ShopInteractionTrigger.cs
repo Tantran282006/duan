@@ -98,6 +98,14 @@ namespace PhoNho.Gameplay.Interaction
         {
             if (_loadSceneOnInteract && !string.IsNullOrEmpty(_targetSceneName))
             {
+                if (_targetSceneName == SceneTransitionManager.CookingSceneName)
+                {
+                    var player = GameObject.FindWithTag("Player");
+                    Vector3 returnPos = player != null ? player.transform.position : new Vector3(3.2f, -1.0f, 0f);
+                    SceneTransitionManager.EnterCooking(_targetSceneName, returnPos);
+                    return;
+                }
+
                 SceneTransitionManager.EnterShop(_targetSceneName, transform.position);
                 return;
             }

@@ -1,0 +1,45 @@
+{
+    "success": true,
+    "timestamp": "2026-10-12T12:58:52.2002989Z",
+    "completedCycles": 3,
+    "initialScoin": 200,
+    "finalScoin": 305,
+    "earnedScoin": 105,
+    "setupChecks": [
+        "Textures generated: all 14 2D textures up to date.",
+        "CityOverworld scene built.",
+        "ShopInterior scene built.",
+        "Cooking scene built.",
+        "EditorBuildSettings registered 3 scenes (all 3 verified)."
+    ],
+    "cycle1Logs": [
+        "Vào Street: Player tại (0.00, -1.00, 0.00). Cameras: 1",
+        "Chụp ảnh Street Scene: docs/snapshots/scene-city-overworld-view-1080p.png",
+        "Vào Shop Interior: Player tại (-3.20, -1.00, 0.00). Cameras: 1",
+        "Chụp ảnh Shop Interior: docs/snapshots/scene-shop-interior-view-1080p.png",
+        "Vào Cooking Scene: MiniGame sẵn sàng. Cameras: 1",
+        "Chụp ảnh Cooking Scene hoàn thành: docs/snapshots/scene-cooking-view-1080p.png",
+        "Nấu hoàn thành: Scoin 200 -> 235 (+35)",
+        "Quay lại Interior: Player trở về trước quầy bếp tại (-3.20, -1.00, 0.00)",
+        "Quay lại Street: Player tại (6.75, 0.80, 0.00). Chu trình 1 hoàn tất 100%!"
+    ],
+    "cycle2Logs": [
+        "Vào Street: Player tại (0.00, -1.00, 0.00). Cameras: 1",
+        "Vào Shop Interior: Player tại (-3.20, -1.00, 0.00). Cameras: 1",
+        "Vào Cooking Scene: MiniGame sẵn sàng. Cameras: 1",
+        "Nấu hoàn thành: Scoin 235 -> 270 (+35)",
+        "Quay lại Interior: Player trở về trước quầy bếp tại (-3.20, -1.00, 0.00)",
+        "Quay lại Street: Player tại (6.75, 0.80, 0.00). Chu trình 2 hoàn tất 100%!"
+    ],
+    "cycle3Logs": [
+        "Vào Street: Player tại (0.00, -1.00, 0.00). Cameras: 1",
+        "Vào Shop Interior: Player tại (-3.20, -1.00, 0.00). Cameras: 1",
+        "Vào Cooking Scene: MiniGame sẵn sàng. Cameras: 1",
+        "Nấu hoàn thành: Scoin 270 -> 305 (+35)",
+        "Quay lại Interior: Player trở về trước quầy bếp tại (-3.20, -1.00, 0.00)",
+        "Quay lại Street: Player tại (6.75, 0.80, 0.00). Chu trình 3 hoàn tất 100%!"
+    ],
+    "cityScreenshot": "docs/snapshots/scene-city-overworld-view-1080p.png",
+    "interiorScreenshot": "docs/snapshots/scene-shop-interior-view-1080p.png",
+    "cookingScreenshot": "docs/snapshots/scene-cooking-view-1080p.png"
+}

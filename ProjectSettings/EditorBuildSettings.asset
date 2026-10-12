@@ -10,5 +10,8 @@ EditorBuildSettings:
     guid: a8c2c8fa3b2e45346b060686ada71379
   - enabled: 1
     path: Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity
+    guid: 3a64202a018176e4897bdd8cd4634cbb
+  - enabled: 1
+    path: Assets/PhoNho/Scenes/Cooking_HoneyBreakfast.unity
     guid: 00000000000000000000000000000000
   m_configObjects: {}

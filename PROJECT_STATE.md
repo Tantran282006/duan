@@ -57,15 +57,20 @@
 | `Assets/PhoNho/Scripts/Map/ParallaxLayer.cs` | Hiệu ứng thị sai nhiều lớp cho bầu trời, chân trời, tán cây |
 | `Assets/PhoNho/Prefabs/Player_Character.prefab` | Prefab nhân vật đầy đủ Rigidbody2D, CapsuleCollider2D, Animator, SpriteRenderer |
 | `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity` | Scene phố gameplay có nền vô tận, collider mặt đất bám theo player, không bị chặn biên, 4 shop triggers |
-| `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity` | Scene nội thất quán ăn sáng Chibi Việt Nam: tường vàng Hội An, sàn gạch bông, bàn ghế gỗ, quầy bếp, cửa thoát ra phố |
-| `Assets/PhoNho/Scripts/Gameplay/SceneTransitionManager.cs` | Quản lý chuyển Scene thật 2 chiều (phố <-> nội thất), debounce chống lặp phím E, lưu tọa độ return spawn |
+| `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity` | Scene nội thất quán ăn sáng Chibi Việt Nam: tường vàng Hội An, sàn gạch bông, bàn ghế gỗ, quầy bếp chuyển sang cooking, cửa thoát ra phố |
+| `Assets/PhoNho/Scenes/Cooking_HoneyBreakfast.unity` | Scene nấu ăn cận cảnh: mặt bàn bếp đá hoa cương, bếp ga lửa xanh, chảo chống dính, khay nguyên liệu, đĩa thành phẩm Bánh Mì Ốp La |
+| `Assets/PhoNho/Scripts/Gameplay/CookingMiniGameController.cs` | Controller mini-game nấu ăn cận cảnh: 4 bước nấu bằng phím [1]-[4], thưởng +35 Scoin vào ledger, nút Hoàn thành [Space] / [ESC] |
+| `Assets/PhoNho/Scripts/Domain/PhoNhoGameState.cs` | Quản lý trạng thái toàn cục bền vững liên Scene (Scoin, Gem, Tcoin, Ledger, Inventory) không dùng singleton rườm rà |
+| `Assets/PhoNho/Scripts/Gameplay/SceneTransitionManager.cs` | Quản lý chuyển Scene thật 2 chiều 2 cấp (Phố <-> Quán <-> Nấu ăn), debounce chống lặp phím E, lưu tọa độ return spawn |
 | `Assets/PhoNho/Scripts/Gameplay/StreetSpawnController.cs` | Tự động đặt Player đúng vị trí trước cửa quán (X=6.75f, Y=-1.80f) và snap camera khi từ nội thất trở ra phố |
+| `Assets/PhoNho/Scripts/Gameplay/InteriorSpawnController.cs` | Tự động đặt Player trước quầy bếp (X=-3.20f, Y=-1.00f) khi từ scene nấu ăn trở lại quán |
 | `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopExitTrigger.cs` | Trigger cửa thoát trong nội thất quán, nhấn phím [E] để chuyển về scene phố |
-| `Assets/PhoNho/Editor/HoneyBreakfastTextureGenerator.cs` | Bộ sinh texture đồ họa Chibi/pixel art phong cách quán ăn Việt Nam (tường, gạch bông, quầy, bàn ăn, cửa, bảng phấn) |
+| `Assets/PhoNho/Editor/HoneyBreakfastTextureGenerator.cs` | Bộ sinh 14 texture đồ họa Chibi/pixel art phong cách quán ăn Việt Nam và bếp nấu cận cảnh |
 | `Assets/PhoNho/Editor/HoneyBreakfastSceneBuilder.cs` | Bộ dựng tự động Scene nội thất ShopInterior_HoneyBreakfast và đăng ký EditorBuildSettings |
+| `Assets/PhoNho/Editor/CookingSceneBuilder.cs` | Bộ dựng tự động Scene Cooking_HoneyBreakfast và đăng ký EditorBuildSettings |
+| `Assets/PhoNho/Editor/PhoNhoThreeScenesFlowValidator.cs` | Validator Play Mode kiểm thử tự động 3 chu trình lặp: Phố <-> Quán <-> Nấu ăn <-> Quán <-> Phố, kiểm tra 0 duplicate camera/manager |
 | `Assets/PhoNho/Scripts/Map/BuildingDefaultCoordinates.cs` | Bảng cấu hình tọa độ (X, Y, Z) và scale mặc định cố định chuẩn của từng nhà theo thiết kế [CHỐT] |
 | `Assets/PhoNho/Scripts/Map/PhoNhoBuildingAnchor.cs` | Component khóa và khôi phục nhanh tọa độ mặc định của từng nhà trong Unity Editor và Runtime |
-| `Assets/PhoNho/Editor/ShopInteriorPlayModeValidator.cs` | Validator Play Mode kiểm tra luồng vào/ra quán, di chuyển, nấu ăn, nhận Scoin và chụp ảnh Game View 1080p |
 | `Assets/PhoNho/Scenes/Character_Preview.unity` | Scene preview nhân vật nam/nữ với các sprite strip 1 hàng |
 | `tools/ide-bridge/` | Bộ cầu nối ChatGPT Custom GPT ↔ Local Task Store ↔ Antigravity MCP |
 | `.agents/skills/game-development/` | Skill native Antigravity IDE chuyên sâu Unity 2D, patterns, Project Memory |
@@ -76,6 +81,7 @@
 ---
 
 ## 5. Những Phần Đã Hoàn Thành Gần Đây
+- **[pho-nho-unity-three-scenes-rebuild-20261012-001] Xây dựng lại 3 scene Phố Nhỏ: CityOverworld, ShopInterior_HoneyBreakfast và Cooking_HoneyBreakfast**: Đã xây dựng lại 3 Scene Unity hoàn chỉnh (CityOverworld_PlayerMovement, ShopInterior_HoneyBreakfast, Cooking_HoneyBreakfast) với đồ họa 2D pixel art/Chibi ấm cúng Hội An & Đông Dương (14 texture procedural mới); chuyển scene thật 2 chiều 2 cấp bằng SceneManager.LoadSceneAsync; mini-game nấu ăn 4 bước "Bánh Mì Ốp La Giòn Rụm" (+35 Scoin/món vào ledger); chạy validator Play Mode tự động 3 chu trình lặp đạt 100% (3/3 pass, 0 duplicate camera/manager, ví tăng từ 200 lên 305 Scoin); xuất 3 ảnh Game View 1080p.
 - **[unity-building-coordinates-lock-20261009] Ghi nhớ & khóa tọa độ mặc định cố định riêng cho từng nhà**: Đã thiết lập bảng tọa độ chuẩn `BuildingDefaultCoordinates.cs` và component `PhoNhoBuildingAnchor.cs`, cập nhật `PhoNhoGameplaySceneBuilder.cs` và scene `CityOverworld_PlayerMovement.unity` để sau khi build hoặc khởi tạo, các nhà luôn đứng cố định tại tọa độ chuẩn: Ingredient_Shop `(-7.05, 0.8, 0)`, Boba_Shop `(-2.4, 0.7, 0)`, Player_House `(2.15, 1.4, 0)`, Breakfast_Shop `(6.75, 0.8, 0)`.
 - **[unity-enter-shop-scene-transition-redo-006] Hoàn thiện Scene Nội Thất Quán Ăn Sáng & Chuyển Scene Thật Bằng SceneManager**:
 - **[project-memory-progress-snapshot-20261009-001] Lưu snapshot báo cáo tiến độ game Phố Nhỏ vào Project Memory, bảo toàn lịch sử**: Đã lưu snapshot báo cáo tiến độ dự án game Phố Nhỏ vào Project Memory (docs/snapshots/snapshot-20261009-173632.json và .md) với lịch sử append-only bảo toàn ...
@@ -83,15 +89,13 @@
 - **[web-dashboard-functional-completion-002] Hoàn thiện toàn bộ UI Web Developer Dashboard**: Đã hoàn thiện toàn bộ UI Web Developer Dashboard (`http://127.0.0.1:5050`) loại bỏ 100% mock data/nút chết: thêm modal tạo task mới lưu trực tiếp vào TaskStore atomic; modal thêm profile Antigravity thật; nút xóa profile phụ an toàn; modal cài đặt cảnh báo Quota %; thanh action buttons trong task drawer (Claim, Báo Blocked, Trả về Pending, Đánh dấu Hoàn thành, Xóa Task); hỗ trợ HTML5 Drag & Drop giữa các cột Kanban; toàn bộ 20 unit test suites và E2E smoke test pass 100%.
 - **[smoke-test-task-muvhf8vt] Task kiểm thử smoke test**: Smoke test completed
 - **[unity-shop-interaction-cooking-flow-004] Tương tác Shop và Luồng Chế biến Nấu ăn**: Đã triển khai trigger proximity `ShopInteractionTrigger` trên 4 công trình (`Ingredient_Shop`, `Boba_Shop`, `Breakfast_Shop`, `Player_House`) hỗ trợ phím [E] và UI prompt; Domain Economy với `PlayerWallet` quản lý vốn ban đầu [CHỐT] 200 Scoin, 10 Gem, 0 Tcoin, giao dịch qua `LedgerEntry` bất biến với `idempotency_key`; Domain Cooking với `PlayerInventory` và `CookingService` (kiểm tra nguyên liệu, bắt đầu nấu, cập nhật tiến độ, hoàn tất và cộng doanh thu vào ví); Giao diện UI Canvas `ShopUIManager` (TopBar HUD tiền tệ, Modal Dialog chuyên biệt cho từng shop: Chợ mua sỉ, Menu pha chế Trà Sữa với thanh tiến độ Slider, Menu nấu Ăn Sáng, Hồ sơ gia chủ & Kho đồ Nhà phố); Tích hợp package `com.unity.ugui: 2.0.0` dùng font chuẩn Unity 6 `LegacyRuntime.ttf`; Batchmode validator pass 100% (0 errors), xuất ảnh `shop-dialog-view-1080p.png`.
-- **[unity-infinite-background-road-003] Infinite background và road/ground cuộn vô tận**: Đã triển khai cơ chế cuộn lặp vô tận `PhoNhoInfiniteLayer` cho bầu trời `01_Sky` (3 tiles), chân trời phố xa `02_DistantTown` (3 tiles, parallax 0.78), vỉa hè gạch hoa `Sidewalk` (7 tiles) và lòng đường nhựa `Road` (3 tiles); gắn `PhoNhoInfiniteGroundCollider` trên `Ground_Platform` bám theo Player giữ vững `GroundBaseline = -1.80f`; tắt camera clamp (`ClampX = false`) và gỡ bỏ boundary walls; bảo toàn tuyệt đối nguyên tắc không nhân bản nhà/prop (toàn bộ cửa hàng và prop chỉ có duy nhất 1 thực thể tại trung tâm phố); kiểm tra chạy xa sang phải ($X = +43.1f$) và sang trái ($X = -46.0f$) đạt 100% pass trên Unity batchmode validator.
-- **[unity-ground-art-walk-animation-002] Sửa nhà/mặt đất bị lệch và làm lại walk animation nam nữ**: Đã chuẩn hóa ground baseline thế giới tại `Y = -1.80f` bù trừ transparent padding chân công trình/ghế/cột đèn và vỉa hè gạch hoa; khớp chính xác 100% ground collider và chân Player; làm lại walk cycle 4 frames luân phiên 2 chân cho cả Nam và Nữ, tiếp đất vững chãi tại baseline, ổn định thân người (triệt tiêu nảy thân 20px), transition tức thì 0f và triệt tiêu foot sliding với tốc độ 3.0 unit/s.
 
 ## 6. Việc Đang Làm & Việc Tiếp Theo
-- **Đang làm**: Đã hoàn thành task `unity-enter-shop-scene-transition-redo-006`.
+- **Đang làm**: Đã hoàn thành trọn vẹn task `pho-nho-unity-three-scenes-rebuild-20261012-001`.
 - **Việc tiếp theo**:
-  1. M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt.
-  2. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.
-  3. M1: Triển khai đánh giá khách hàng (review/sao), gắn chặt với đơn hàng hoàn tất.
+  1. M0: Chuẩn hóa hệ thống Audio/SFX cho nấu ăn, tiếng bước chân và âm thanh môi trường đường phố.
+  2. M0: Tích hợp localization tiếng Việt toàn diện cho toàn bộ HUD và thực đơn quán.
+  3. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.
 
 ---
 

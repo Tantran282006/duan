@@ -17,19 +17,20 @@ using UnityEngine.SceneManagement;
 namespace PhoNho.Gameplay.Editor
 {
     /// <summary>
-    /// Builds the ShopInterior_HoneyBreakfast.unity scene with warm Vietnamese vintage Chibi aesthetic,
-    /// complete with cooking counter, exit door transition, camera follow, and player character.
-    /// Also registers both street and interior scenes in EditorBuildSettings.
+    /// Builds the rich, atmospheric ShopInterior_HoneyBreakfast.unity scene with warm Vietnamese vintage Chibi aesthetic,
+    /// complete with cooking counter leading to cooking station, dining tables with NPC customers, ingredient shelves,
+    /// decorations, exit door transition, camera follow, and player character with InteriorSpawnController.
     /// </summary>
     public static class HoneyBreakfastSceneBuilder
     {
         public const string SceneFolder = "Assets/PhoNho/Scenes";
-        public const string InteriorScenePath = SceneFolder + "/ShopInterior_HoneyBreakfast.unity";
         public const string StreetScenePath = SceneFolder + "/CityOverworld_PlayerMovement.unity";
+        public const string InteriorScenePath = SceneFolder + "/ShopInterior_HoneyBreakfast.unity";
+        public const string CookingScenePath = SceneFolder + "/Cooking_HoneyBreakfast.unity";
 
         public const float GroundBaseline = -1.80f;
 
-        [MenuItem("Phố Nhỏ/Gameplay/Tạo Scene Nội Thất Quán Ăn Sáng")]
+        [MenuItem("Phố Nhỏ/Gameplay/Tạo Scene Nội Thất Quán Ăn Sáng Giàu Chi Tiết")]
         public static void BuildInteriorScene()
         {
             Directory.CreateDirectory(SceneFolder);
@@ -68,7 +69,7 @@ namespace PhoNho.Gameplay.Editor
             var wallSr = wallGo.AddComponent<SpriteRenderer>();
             wallSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.WallPath);
             wallSr.sortingOrder = -50;
-            wallGo.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            wallGo.transform.localScale = Vector3.one;
 
             // 3. Indochine Tile Floor
             GameObject floorGo = new GameObject("Interior_Floor_Tiles");
@@ -105,7 +106,6 @@ namespace PhoNho.Gameplay.Editor
             // 5. Exit Door & Street Return Trigger (Left side: X = -4.3f)
             GameObject exitDoorGo = new GameObject("Interior_Exit_Door");
             exitDoorGo.transform.SetParent(root.transform, false);
-            // Height 580 px, PPU 100 -> height 5.8 units. Center Y = GroundBaseline + 2.9f
             exitDoorGo.transform.position = new Vector3(-4.3f, GroundBaseline + 2.8f, 0f);
 
             var doorSr = exitDoorGo.AddComponent<SpriteRenderer>();
@@ -113,32 +113,59 @@ namespace PhoNho.Gameplay.Editor
             doorSr.sortingOrder = -10;
 
             var exitTrigger = exitDoorGo.AddComponent<ShopExitTrigger>();
-            exitTrigger.Configure("Nhấn [E] Ra ngoài phố", 2.2f, "CityOverworld_PlayerMovement");
+            exitTrigger.Configure("Nhấn [E] Ra ngoài phố", 2.2f, StreetScenePath);
 
-            // 6. Dining Tables
+            // 6. Wall Decorations (Plant & Calendar at X = -3.1f)
+            GameObject decoGo = new GameObject("Interior_Decorations");
+            decoGo.transform.SetParent(root.transform, false);
+            decoGo.transform.position = new Vector3(-3.0f, GroundBaseline + 2.2f, 0f);
+            var decoSr = decoGo.AddComponent<SpriteRenderer>();
+            decoSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.DecorationsPath);
+            decoSr.sortingOrder = -18;
+            decoGo.transform.localScale = new Vector3(0.85f, 0.85f, 1f);
+
+            // 7. Chalk Menu Board in Center (X = 0f, Y = 1.8f)
+            GameObject menuGo = new GameObject("Interior_Menu_Board");
+            menuGo.transform.SetParent(root.transform, false);
+            menuGo.transform.position = new Vector3(0.0f, 1.8f, 0f);
+            var menuSr = menuGo.AddComponent<SpriteRenderer>();
+            menuSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.MenuBoardPath);
+            menuSr.sortingOrder = -15;
+
+            // 8. Wall Ingredient Shelf above counter (X = 3.6f, Y = 1.8f)
+            GameObject shelfGo = new GameObject("Interior_Ingredient_Shelf");
+            shelfGo.transform.SetParent(root.transform, false);
+            shelfGo.transform.position = new Vector3(3.6f, 1.7f, 0f);
+            var shelfSr = shelfGo.AddComponent<SpriteRenderer>();
+            shelfSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.IngredientShelfPath);
+            shelfSr.sortingOrder = -14;
+            shelfGo.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
+
+            // 9. Dining Tables & NPC Customers
             GameObject table1Go = new GameObject("Dining_Table_1");
             table1Go.transform.SetParent(root.transform, false);
-            table1Go.transform.position = new Vector3(-1.3f, GroundBaseline + 1.45f, 0f);
+            table1Go.transform.position = new Vector3(-1.4f, GroundBaseline + 1.45f, 0f);
             var table1Sr = table1Go.AddComponent<SpriteRenderer>();
             table1Sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.DiningTablePath);
             table1Sr.sortingOrder = -5;
 
             GameObject table2Go = new GameObject("Dining_Table_2");
             table2Go.transform.SetParent(root.transform, false);
-            table2Go.transform.position = new Vector3(1.3f, GroundBaseline + 1.45f, 0f);
+            table2Go.transform.position = new Vector3(1.1f, GroundBaseline + 1.45f, 0f);
             var table2Sr = table2Go.AddComponent<SpriteRenderer>();
             table2Sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.DiningTablePath);
             table2Sr.sortingOrder = -5;
 
-            // 7. Chalk Menu Board
-            GameObject menuGo = new GameObject("Interior_Menu_Board");
-            menuGo.transform.SetParent(root.transform, false);
-            menuGo.transform.position = new Vector3(4.0f, 1.8f, 0f);
-            var menuSr = menuGo.AddComponent<SpriteRenderer>();
-            menuSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.MenuBoardPath);
-            menuSr.sortingOrder = -15;
+            // NPC Customers seated at tables
+            GameObject npcGo = new GameObject("Interior_NPC_Customers");
+            npcGo.transform.SetParent(root.transform, false);
+            npcGo.transform.position = new Vector3(-0.1f, GroundBaseline + 1.85f, 0f);
+            var npcSr = npcGo.AddComponent<SpriteRenderer>();
+            npcSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(HoneyBreakfastTextureGenerator.NPCCustomersPath);
+            npcSr.sortingOrder = -8;
+            npcGo.transform.localScale = new Vector3(0.92f, 0.92f, 1f);
 
-            // 8. Cooking Counter & Interaction Trigger (Right side: X = 4.0f)
+            // 10. Cooking Counter & Interaction Trigger to COOKING SCENE (Right side: X = 4.0f)
             GameObject counterGo = new GameObject("Interior_Cooking_Counter");
             counterGo.transform.SetParent(root.transform, false);
             counterGo.transform.position = new Vector3(4.0f, GroundBaseline + 1.8f, 0f);
@@ -148,10 +175,11 @@ namespace PhoNho.Gameplay.Editor
             counterSr.sortingOrder = -2;
 
             var counterTrigger = counterGo.AddComponent<ShopInteractionTrigger>();
-            counterTrigger.Configure(ShopType.BreakfastShop, "Bếp Quán Ăn Sáng Mật Ong", "Nhấn [E] Nấu & Phục vụ khách", 2.5f);
-            counterTrigger.ConfigureSceneTransition(false, ""); // Inside interior: opens cooking dialog, not scene load
+            counterTrigger.Configure(ShopType.BreakfastShop, "Bếp Quán Ăn Sáng", "Nhấn [E] Bắt đầu Nấu Ăn (Vào Bếp)", 2.5f);
+            // Configured to trigger real scene transition to Cooking_HoneyBreakfast!
+            counterTrigger.ConfigureSceneTransition(true, SceneTransitionManager.CookingSceneName);
 
-            // 9. Instantiate Player Character from Prefab
+            // 11. Instantiate Player Character from Prefab
             GameObject playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PhoNhoGameplaySceneBuilder.PrefabPath);
             if (playerPrefab == null)
             {
@@ -160,14 +188,17 @@ namespace PhoNho.Gameplay.Editor
 
             GameObject playerInstance = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab, root.transform);
             playerInstance.name = "Player_Character";
-            // Spawn inside near the entrance door: X = -3.2f, Y = -1.0f
             playerInstance.transform.position = new Vector3(-3.2f, -1.0f, 0f);
 
             var playerMovement = playerInstance.GetComponent<PhoNhoPlayerMovement>();
+            // Attach InteriorSpawnController to handle spawn position when returning from Cooking scene
+            var interiorSpawner = playerInstance.AddComponent<InteriorSpawnController>();
+            interiorSpawner.Configure(playerInstance.transform, cameraFollow);
+
             cameraFollow.SetTarget(playerInstance.transform);
             cameraFollow.SnapToTarget();
 
-            // 10. Game Systems & UI
+            // 12. Game Systems & UI
             GameObject gameSystemGo = new GameObject("PhoNho_GameSystem");
             gameSystemGo.transform.SetParent(root.transform, false);
 
@@ -176,7 +207,7 @@ namespace PhoNho.Gameplay.Editor
             var cookingService = gameSystemGo.AddComponent<CookingService>();
             var uiManager = gameSystemGo.AddComponent<ShopUIManager>();
 
-            // Stock initial breakfast ingredients so the player can cook right away
+            // Ensure player has basic ingredients
             inventory.AddIngredient("flour", 6);
             inventory.AddIngredient("egg", 10);
             inventory.AddIngredient("beef", 6);
@@ -185,7 +216,7 @@ namespace PhoNho.Gameplay.Editor
             cookingService.Configure(wallet, inventory);
             uiManager.Configure(wallet, inventory, cookingService, playerMovement);
 
-            // 11. EventSystem
+            // 13. EventSystem
             if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
             {
                 GameObject eventSystemGo = new GameObject("EventSystem");
@@ -200,7 +231,7 @@ namespace PhoNho.Gameplay.Editor
             // Register in Build Settings
             UpdateBuildSettings();
 
-            Debug.Log($"[HoneyBreakfastSceneBuilder] Đã tạo thành công Scene Nội Thất tại: {InteriorScenePath}");
+            Debug.Log($"[HoneyBreakfastSceneBuilder] Đã tạo thành công Scene Nội Thất Giàu Chi Tiết tại: {InteriorScenePath}");
         }
 
         public static void UpdateBuildSettings()
@@ -217,9 +248,10 @@ namespace PhoNho.Gameplay.Editor
 
             AddScene(StreetScenePath);
             AddScene(InteriorScenePath);
+            AddScene(CookingScenePath);
 
             EditorBuildSettings.scenes = scenes.ToArray();
-            Debug.Log($"[HoneyBreakfastSceneBuilder] Đã cập nhật Build Settings: {scenes.Count} scenes.");
+            Debug.Log($"[HoneyBreakfastSceneBuilder] Đã cập nhật Build Settings: {scenes.Count} scenes (Bao gồm cả 3 Scene).");
         }
     }
 }

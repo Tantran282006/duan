@@ -4,8 +4,12 @@
 
 ## TRẠNG THÁI HIỆN TẠI
 
-- **Mốc hiện tại**: M0 (Khởi tạo dự án Unity, Gameplay 2D Movement, Tương tác Cửa hàng & Web Developer Dashboard MAX VFX Đỉnh Cao)
-- **Đã có**: bộ tài liệu thiết kế, cấu trúc `Assets/PhoNho/`, 13 background assets, scene phố `Assets/unity.unity`, `CityOverworld_ArtLayout.unity` và scene gameplay `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`.
+- **Mốc hiện tại**: M0 (Khởi tạo dự án Unity, Gameplay 2D Movement, Xây Dựng Hoàn Chỉnh 3 Scene Chuyển Cảnh Thật 2 Chiều 2 Cấp & Web Developer Dashboard MAX VFX)
+- **3 Scene Unity Hoàn Chỉnh Chạy Thật 100%**:
+  1. `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`: Đường phố Phố Nhỏ, cửa tiệm Honey Breakfast, nhà cửa, đường, cây, đèn, vỉa hè, di chuyển vô tận, nhấn [E] tại cửa tiệm Honey Breakfast chuyển thật sang Scene nội thất.
+  2. `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity`: Thiết kế lại toàn diện nội thất đậm chất Chibi/pixel art ấm cúng Hội An & Đông Dương: tường vàng kem, sàn gạch bông, quầy bếp nấu phở/ốp la, kệ nguyên liệu treo tường (lọ gia vị, giỏ trứng, chai tương), bàn ghế ăn Indochine, 2 NPC khách hàng Chibi thưởng thức bữa sáng, tranh phố cổ, lịch bloc đỏ truyền thống, đèn lồng ấm áp. Nhấn [E] tại quầy bếp chuyển sang Scene nấu ăn; nhấn [E] tại cửa thoát quay về đúng trước quán ngoài phố.
+  3. `Assets/PhoNho/Scenes/Cooking_HoneyBreakfast.unity`: Scene nấu ăn cận cảnh hoàn toàn mới: mặt bàn bếp đá hoa cương vân mây, tường gạch men retro, bếp gas mini lửa xanh bập bùng, chảo chống dính, khay nguyên liệu (trứng, bơ, pate, hành ngò, ớt), đĩa sứ hoa sen truyền thống đựng món "Bánh Mì Ốp La Giòn Rụm" nóng hổi bốc khói. Hỗ trợ 4 bước chế biến tương tác chân thực (phím 1-4 và click chuột), thưởng +35 Scoin theo ledger, lưu món ăn và quay lại quán.
+- **Kiểm thử tự động 3 chu trình Play Mode**: `PhoNhoThreeScenesFlowValidator` chạy headless trên Unity 6000.4.3f1 batchmode hoàn tất trọn vẹn 3 chu trình lặp: Phố -> Quán -> Nấu ăn -> Quán -> Phố, 100% pass, 0 lỗi, 0 duplicate camera (duy nhất 1 camera ở mọi thời điểm), 0 duplicate manager, ví Scoin tăng từ 200 lên 305 Scoin (+105 Scoin). Đã xuất 3 ảnh Game View 1080p và báo cáo kết quả JSON tại `docs/snapshots/`.
 - **Character & Gameplay 2D Movement**:
   - Đã chuẩn hóa 4 sprite strip 1 hàng (`1x4`, `2048 x 640 px`, PPU 256, pivot 0.5, 0.1).
   - Walk animation của cả Nam và Nữ được tái thiết kế: bước chân luân phiên 2 chân rõ ràng, tiếp đất tại baseline Y=575 (pivot Y=0.1), chuyển trạng thái tức thì, tốc độ 3.0 unit/s.
@@ -65,6 +69,22 @@
 4. M1: Mở rộng thêm Scene nội thất Quán Trà Sữa `ShopInterior_Boba.unity`.
 
 ## NHẬT KÝ PHIÊN
+
+### Phiên 28 — 2026-10-12 (Lệnh P0: Xây dựng lại 3 Scene Phố Nhỏ, chuyển cảnh thật 2 chiều 2 cấp và kiểm thử 3 chu trình)
+- **Mốc**: M0 / 3 Scene Unity Rebuild, Interior Art & Cooking Mini-Game Flow
+- **Đã làm**:
+  - Nhận và claim task `pho-nho-unity-three-scenes-rebuild-20261012-001` trong IDE Bridge.
+  - Tạo bộ 14 texture 2D pixel art/Chibi procedurally trong `HoneyBreakfastTextureGenerator.cs`: bổ sung kệ nguyên liệu, cây phong thủy & lịch bloc, khách hàng NPC Chibi, bàn bếp đá hoa cương & gạch retro, bếp ga lửa xanh, chảo 3 trạng thái, khay nguyên liệu, đĩa bánh mì ốp la hoàn chỉnh bốc khói.
+  - Thiết kế lại toàn diện Scene nội thất `ShopInterior_HoneyBreakfast.unity`: bổ sung quầy bếp, kệ nguyên liệu, bàn ghế, thực đơn, khách hàng NPC, đèn lồng, tranh phố cổ, cây xanh, trigger [E] vào bếp.
+  - Xây dựng Scene mới cận cảnh `Cooking_HoneyBreakfast.unity`: giao diện nấu ăn 4 bước trực quan (Làm nóng chảo & bơ -> Đập trứng lòng đào -> Nướng bánh mì & kẹp pate -> Bày đĩa rắc tiêu hành), thưởng +35 Scoin vào ledger ví, lưu món ăn và trở lại quán.
+  - Nâng cấp `SceneTransitionManager.cs` và `PhoNhoGameState.cs` quản lý chuyển scene 2 chiều 2 cấp và bảo toàn dữ liệu ví tiền/kho đồ liên tục không thất thoát.
+  - Viết component `InteriorSpawnController.cs` và `CookingMiniGameController.cs`.
+  - Viết bộ validator Play Mode tự động `PhoNhoThreeScenesFlowValidator.cs`: chạy batchmode trên Unity 6000.4.3f1 hoàn thành 3 chu trình lặp (Phố -> Quán -> Nấu ăn -> Quán -> Phố), pass 100%, 0 duplicate camera/listener/manager, Scoin tăng từ 200 -> 305 Scoin (+105 Scoin).
+  - Chụp và lưu 3 ảnh Game View 1080p: `scene-city-overworld-view-1080p.png`, `scene-shop-interior-view-1080p.png`, `scene-cooking-view-1080p.png` và file kết quả `docs/snapshots/three-scenes-validation-results.json`.
+  - Báo cáo hoàn thành task `pho-nho-unity-three-scenes-rebuild-20261012-001` qua MCP `report_result`.
+- **File chính**: `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`, `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity`, `Assets/PhoNho/Scenes/Cooking_HoneyBreakfast.unity`, `Assets/PhoNho/Scripts/Gameplay/SceneTransitionManager.cs`, `Assets/PhoNho/Scripts/Gameplay/InteriorSpawnController.cs`, `Assets/PhoNho/Scripts/Gameplay/CookingMiniGameController.cs`, `Assets/PhoNho/Scripts/Domain/PhoNhoGameState.cs`, `Assets/PhoNho/Editor/HoneyBreakfastTextureGenerator.cs`, `Assets/PhoNho/Editor/HoneyBreakfastSceneBuilder.cs`, `Assets/PhoNho/Editor/CookingSceneBuilder.cs`, `Assets/PhoNho/Editor/PhoNhoThreeScenesFlowValidator.cs`, `docs/snapshots/three-scenes-validation-results.json`.
+- **Cách chạy/kiểm tra**: Chạy menu Unity `Phố Nhỏ > Gameplay > Kiểm tra Toàn Bộ 3 Scene (3 Chu Trình & Chụp Ảnh)` hoặc CLI batchmode `-executeMethod PhoNho.Gameplay.Editor.PhoNhoThreeScenesFlowValidator.ValidateFromCommandLine` (exit code 0, 100% pass 3/3 cycles).
+- **Lỗi / nợ kỹ thuật**: Không. Đạt trọn vẹn toàn bộ tiêu chí P0.
 
 ### Phiên 27 — 2026-10-09 (Khóa và ghi nhớ tọa độ mặc định cố định của riêng từng nhà)
 - **Mốc**: M0 / Tọa độ Cố Định Từng Nhà & Scene Layout Persistence

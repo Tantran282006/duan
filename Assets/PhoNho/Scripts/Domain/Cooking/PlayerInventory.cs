@@ -19,6 +19,32 @@ namespace PhoNho.Domain.Cooking
         public IReadOnlyDictionary<string, int> Ingredients => _ingredients;
         public IReadOnlyDictionary<string, int> Products => _products;
 
+        private void Awake()
+        {
+            EnsureInitialized();
+        }
+
+        public void EnsureInitialized()
+        {
+            if (PhoNhoGameState.HasInitializedSession)
+            {
+                if (_ingredients.Count == 0 && PhoNhoGameState.Ingredients.Count > 0)
+                {
+                    foreach (var kvp in PhoNhoGameState.Ingredients)
+                    {
+                        _ingredients[kvp.Key] = kvp.Value;
+                    }
+                }
+                if (_products.Count == 0 && PhoNhoGameState.Products.Count > 0)
+                {
+                    foreach (var kvp in PhoNhoGameState.Products)
+                    {
+                        _products[kvp.Key] = kvp.Value;
+                    }
+                }
+            }
+        }
+
         public int GetIngredientCount(string ingredientId)
         {
             if (string.IsNullOrEmpty(ingredientId)) return 0;
@@ -37,6 +63,7 @@ namespace PhoNho.Domain.Cooking
             int current = GetIngredientCount(ingredientId);
             int next = current + amount;
             _ingredients[ingredientId] = next;
+            PhoNhoGameState.SaveInventoryState(_ingredients, _products);
             OnIngredientChanged?.Invoke(ingredientId, next);
         }
 
@@ -56,6 +83,7 @@ namespace PhoNho.Domain.Cooking
                 _ingredients[ingredientId] = next;
             }
 
+            PhoNhoGameState.SaveInventoryState(_ingredients, _products);
             OnIngredientChanged?.Invoke(ingredientId, next);
             return true;
         }
@@ -93,6 +121,7 @@ namespace PhoNho.Domain.Cooking
             int current = GetProductCount(recipeId);
             int next = current + amount;
             _products[recipeId] = next;
+            PhoNhoGameState.SaveInventoryState(_ingredients, _products);
             OnProductChanged?.Invoke(recipeId, next);
         }
     }

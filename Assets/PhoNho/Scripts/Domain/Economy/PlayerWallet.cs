@@ -24,6 +24,7 @@ namespace PhoNho.Domain.Economy
 
         private readonly List<LedgerEntry> _ledger = new List<LedgerEntry>();
         private readonly HashSet<string> _processedIdempotencyKeys = new HashSet<string>();
+        private bool _isInitializing = false;
 
         public event Action<CurrencyType, int, int> OnBalanceChanged; // currency, newBalance, delta
 
@@ -70,9 +71,18 @@ namespace PhoNho.Domain.Economy
 
         public void EnsureInitialized()
         {
+            if (_isInitializing) return;
             if (_ledger.Count == 0)
             {
-                InitializeWallet();
+                _isInitializing = true;
+                try
+                {
+                    InitializeWallet();
+                }
+                finally
+                {
+                    _isInitializing = false;
+                }
             }
         }
 
@@ -80,21 +90,40 @@ namespace PhoNho.Domain.Economy
         {
             if (_ledger.Count == 0)
             {
-                _scoin = 0;
-                _gem = 0;
-                _tcoin = 0;
-
-                ApplyTransaction(CurrencyType.Scoin, _initialScoin, "Khởi tạo vốn ban đầu", "init_scoin_" + Guid.NewGuid().ToString("N"), out _);
-                ApplyTransaction(CurrencyType.Gem, _initialGem, "Khởi tạo Gem ban đầu", "init_gem_" + Guid.NewGuid().ToString("N"), out _);
-                if (_initialTcoin > 0)
+                if (PhoNhoGameState.HasInitializedSession)
                 {
-                    ApplyTransaction(CurrencyType.Tcoin, _initialTcoin, "Khởi tạo Tcoin ban đầu", "init_tcoin_" + Guid.NewGuid().ToString("N"), out _);
+                    _scoin = PhoNhoGameState.Scoin;
+                    _gem = PhoNhoGameState.Gem;
+                    _tcoin = PhoNhoGameState.Tcoin;
+                    foreach (var entry in PhoNhoGameState.Ledger)
+                    {
+                        _ledger.Add(entry);
+                        if (!string.IsNullOrEmpty(entry.idempotencyKey))
+                        {
+                            _processedIdempotencyKeys.Add(entry.idempotencyKey);
+                        }
+                    }
+                }
+                else
+                {
+                    _scoin = 0;
+                    _gem = 0;
+                    _tcoin = 0;
+
+                    ApplyTransaction(CurrencyType.Scoin, _initialScoin, "Khởi tạo vốn ban đầu", "init_scoin_" + Guid.NewGuid().ToString("N"), out _);
+                    ApplyTransaction(CurrencyType.Gem, _initialGem, "Khởi tạo Gem ban đầu", "init_gem_" + Guid.NewGuid().ToString("N"), out _);
+                    if (_initialTcoin > 0)
+                    {
+                        ApplyTransaction(CurrencyType.Tcoin, _initialTcoin, "Khởi tạo Tcoin ban đầu", "init_tcoin_" + Guid.NewGuid().ToString("N"), out _);
+                    }
+                    PhoNhoGameState.SaveWalletState(_scoin, _gem, _tcoin, _ledger);
                 }
             }
         }
 
         public int GetBalance(CurrencyType currency)
         {
+            EnsureInitialized();
             switch (currency)
             {
                 case CurrencyType.Scoin: return _scoin;
@@ -115,6 +144,7 @@ namespace PhoNho.Domain.Economy
         /// </summary>
         public bool ApplyTransaction(CurrencyType currency, int delta, string reason, string idempotencyKey, out string error)
         {
+            EnsureInitialized();
             error = null;
 
             if (string.IsNullOrEmpty(idempotencyKey))
@@ -160,6 +190,7 @@ namespace PhoNho.Domain.Economy
                 reason
             );
             _ledger.Add(entry);
+            PhoNhoGameState.SaveWalletState(_scoin, _gem, _tcoin, _ledger);
 
             OnBalanceChanged?.Invoke(currency, newBalance, delta);
             return true;
