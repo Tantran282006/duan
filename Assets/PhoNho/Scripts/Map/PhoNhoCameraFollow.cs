@@ -56,6 +56,18 @@ namespace PhoNho.Map
             _clampX = true;
         }
 
+        public void SnapToTarget()
+        {
+            if (_target == null) return;
+            float targetX = _target.position.x + _offset.x;
+            if (_clampX)
+            {
+                targetX = Mathf.Clamp(targetX, _minX, _maxX);
+            }
+            transform.position = new Vector3(targetX, transform.position.y, _offset.z);
+            _currentVelocity = Vector3.zero;
+        }
+
         private void LateUpdate()
         {
             if (_target == null)

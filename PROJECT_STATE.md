@@ -32,6 +32,12 @@
 - **Tcoin thẩm mỹ**: Tcoin nạp bằng tiền thật chỉ dùng cho thẩm mỹ, tuyệt đối không mua được sao hay lợi thế kinh tế.
 - **Đánh giá chặt chẽ**: Mỗi đánh giá gắn liền với một đơn hàng hoàn tất; tối đa 1 đánh giá/đơn, giới hạn theo ngày.
 - **Định danh thành phố**: Mọi bảng dữ liệu có `city_id` sẵn sàng mở rộng nhiều thành phố.
+- **Tọa độ cố định từng nhà [CHỐT]**: Mỗi công trình trên phố có tọa độ $(X, Y, Z)$ và scale riêng biệt mặc định được lưu trữ trong `BuildingDefaultCoordinates.cs` và bảo vệ bằng `PhoNhoBuildingAnchor`:
+  - `Ingredient_Shop`: Position `(-7.05, 0.8, 0)`, Scale `0.3781139`
+  - `Boba_Shop`: Position `(-2.4, 0.7, 0)`, Scale `0.3583474`
+  - `Player_House`: Position `(2.15, 1.4, 0)`, Scale `0.3774238`
+  - `Breakfast_Shop`: Position `(6.75, 0.8, 0)`, Scale `0.3741197`
+  Sau khi build nhà hoặc tái tạo scene bằng `PhoNhoGameplaySceneBuilder`, toàn bộ nhà luôn cố định tuyệt đối theo các tọa độ này.
 
 ---
 
@@ -51,25 +57,37 @@
 | `Assets/PhoNho/Scripts/Map/ParallaxLayer.cs` | Hiệu ứng thị sai nhiều lớp cho bầu trời, chân trời, tán cây |
 | `Assets/PhoNho/Prefabs/Player_Character.prefab` | Prefab nhân vật đầy đủ Rigidbody2D, CapsuleCollider2D, Animator, SpriteRenderer |
 | `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity` | Scene phố gameplay có nền vô tận, collider mặt đất bám theo player, không bị chặn biên, 4 shop triggers |
+| `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity` | Scene nội thất quán ăn sáng Chibi Việt Nam: tường vàng Hội An, sàn gạch bông, bàn ghế gỗ, quầy bếp, cửa thoát ra phố |
+| `Assets/PhoNho/Scripts/Gameplay/SceneTransitionManager.cs` | Quản lý chuyển Scene thật 2 chiều (phố <-> nội thất), debounce chống lặp phím E, lưu tọa độ return spawn |
+| `Assets/PhoNho/Scripts/Gameplay/StreetSpawnController.cs` | Tự động đặt Player đúng vị trí trước cửa quán (X=6.75f, Y=-1.80f) và snap camera khi từ nội thất trở ra phố |
+| `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopExitTrigger.cs` | Trigger cửa thoát trong nội thất quán, nhấn phím [E] để chuyển về scene phố |
+| `Assets/PhoNho/Editor/HoneyBreakfastTextureGenerator.cs` | Bộ sinh texture đồ họa Chibi/pixel art phong cách quán ăn Việt Nam (tường, gạch bông, quầy, bàn ăn, cửa, bảng phấn) |
+| `Assets/PhoNho/Editor/HoneyBreakfastSceneBuilder.cs` | Bộ dựng tự động Scene nội thất ShopInterior_HoneyBreakfast và đăng ký EditorBuildSettings |
+| `Assets/PhoNho/Scripts/Map/BuildingDefaultCoordinates.cs` | Bảng cấu hình tọa độ (X, Y, Z) và scale mặc định cố định chuẩn của từng nhà theo thiết kế [CHỐT] |
+| `Assets/PhoNho/Scripts/Map/PhoNhoBuildingAnchor.cs` | Component khóa và khôi phục nhanh tọa độ mặc định của từng nhà trong Unity Editor và Runtime |
+| `Assets/PhoNho/Editor/ShopInteriorPlayModeValidator.cs` | Validator Play Mode kiểm tra luồng vào/ra quán, di chuyển, nấu ăn, nhận Scoin và chụp ảnh Game View 1080p |
 | `Assets/PhoNho/Scenes/Character_Preview.unity` | Scene preview nhân vật nam/nữ với các sprite strip 1 hàng |
 | `tools/ide-bridge/` | Bộ cầu nối ChatGPT Custom GPT ↔ Local Task Store ↔ Antigravity MCP |
 | `.agents/skills/game-development/` | Skill native Antigravity IDE chuyên sâu Unity 2D, patterns, Project Memory |
+| `docs/snapshots/` | Lưu trữ snapshot tiến độ dự án có timestamp, lịch sử append-only không bị xóa/ghi đè |
 | `PROGRESS.md` | Nhật ký tiến độ chi tiết từng phiên |
 | `PROJECT_STATE.md` | Bộ nhớ cô đọng của dự án (file này) |
 
 ---
 
 ## 5. Những Phần Đã Hoàn Thành Gần Đây
+- **[unity-building-coordinates-lock-20261009] Ghi nhớ & khóa tọa độ mặc định cố định riêng cho từng nhà**: Đã thiết lập bảng tọa độ chuẩn `BuildingDefaultCoordinates.cs` và component `PhoNhoBuildingAnchor.cs`, cập nhật `PhoNhoGameplaySceneBuilder.cs` và scene `CityOverworld_PlayerMovement.unity` để sau khi build hoặc khởi tạo, các nhà luôn đứng cố định tại tọa độ chuẩn: Ingredient_Shop `(-7.05, 0.8, 0)`, Boba_Shop `(-2.4, 0.7, 0)`, Player_House `(2.15, 1.4, 0)`, Breakfast_Shop `(6.75, 0.8, 0)`.
+- **[unity-enter-shop-scene-transition-redo-006] Hoàn thiện Scene Nội Thất Quán Ăn Sáng & Chuyển Scene Thật Bằng SceneManager**:
+- **[project-memory-progress-snapshot-20261009-001] Lưu snapshot báo cáo tiến độ game Phố Nhỏ vào Project Memory, bảo toàn lịch sử**: Đã lưu snapshot báo cáo tiến độ dự án game Phố Nhỏ vào Project Memory (docs/snapshots/snapshot-20261009-173632.json và .md) với lịch sử append-only bảo toàn ...
 - **[web-dashboard-max-vfx-ui-003] Nâng cấp Web Dashboard đẳng cấp MAX VFX & Visual Polish đỉnh cao**: Nâng cấp toàn diện giao diện Web Developer Dashboard (`http://127.0.0.1:5050`) lên chuẩn rich aesthetics & MAX VFX: Canvas Ambient Particles hạt đèn lồng ấm áp trôi lơ lửng phản ứng chuột mượt mà; Web Audio Synthesizer SFX độc lập (zero external asset) với âm thanh tactile click, chime đổi tab, chime nhận task, arpeggio fanfare hoàn thành task và âm cảnh báo; nút bật/tắt âm thanh `localStorage`; Glassmorphism v2 & Specular Highlights; 3D hover lift cho Kanban/Profile cards; Shimmer sweep trên quota bar; Animated number counter nhảy số mượt mà; Toast notifications hiện đại với thanh thời gian progress bar; Ripple effect trên toàn bộ nút bấm; 20/20 unit test suites và E2E smoke test pass 100%.
 - **[web-dashboard-functional-completion-002] Hoàn thiện toàn bộ UI Web Developer Dashboard**: Đã hoàn thiện toàn bộ UI Web Developer Dashboard (`http://127.0.0.1:5050`) loại bỏ 100% mock data/nút chết: thêm modal tạo task mới lưu trực tiếp vào TaskStore atomic; modal thêm profile Antigravity thật; nút xóa profile phụ an toàn; modal cài đặt cảnh báo Quota %; thanh action buttons trong task drawer (Claim, Báo Blocked, Trả về Pending, Đánh dấu Hoàn thành, Xóa Task); hỗ trợ HTML5 Drag & Drop giữa các cột Kanban; toàn bộ 20 unit test suites và E2E smoke test pass 100%.
 - **[smoke-test-task-muvhf8vt] Task kiểm thử smoke test**: Smoke test completed
 - **[unity-shop-interaction-cooking-flow-004] Tương tác Shop và Luồng Chế biến Nấu ăn**: Đã triển khai trigger proximity `ShopInteractionTrigger` trên 4 công trình (`Ingredient_Shop`, `Boba_Shop`, `Breakfast_Shop`, `Player_House`) hỗ trợ phím [E] và UI prompt; Domain Economy với `PlayerWallet` quản lý vốn ban đầu [CHỐT] 200 Scoin, 10 Gem, 0 Tcoin, giao dịch qua `LedgerEntry` bất biến với `idempotency_key`; Domain Cooking với `PlayerInventory` và `CookingService` (kiểm tra nguyên liệu, bắt đầu nấu, cập nhật tiến độ, hoàn tất và cộng doanh thu vào ví); Giao diện UI Canvas `ShopUIManager` (TopBar HUD tiền tệ, Modal Dialog chuyên biệt cho từng shop: Chợ mua sỉ, Menu pha chế Trà Sữa với thanh tiến độ Slider, Menu nấu Ăn Sáng, Hồ sơ gia chủ & Kho đồ Nhà phố); Tích hợp package `com.unity.ugui: 2.0.0` dùng font chuẩn Unity 6 `LegacyRuntime.ttf`; Batchmode validator pass 100% (0 errors), xuất ảnh `shop-dialog-view-1080p.png`.
 - **[unity-infinite-background-road-003] Infinite background và road/ground cuộn vô tận**: Đã triển khai cơ chế cuộn lặp vô tận `PhoNhoInfiniteLayer` cho bầu trời `01_Sky` (3 tiles), chân trời phố xa `02_DistantTown` (3 tiles, parallax 0.78), vỉa hè gạch hoa `Sidewalk` (7 tiles) và lòng đường nhựa `Road` (3 tiles); gắn `PhoNhoInfiniteGroundCollider` trên `Ground_Platform` bám theo Player giữ vững `GroundBaseline = -1.80f`; tắt camera clamp (`ClampX = false`) và gỡ bỏ boundary walls; bảo toàn tuyệt đối nguyên tắc không nhân bản nhà/prop (toàn bộ cửa hàng và prop chỉ có duy nhất 1 thực thể tại trung tâm phố); kiểm tra chạy xa sang phải ($X = +43.1f$) và sang trái ($X = -46.0f$) đạt 100% pass trên Unity batchmode validator.
 - **[unity-ground-art-walk-animation-002] Sửa nhà/mặt đất bị lệch và làm lại walk animation nam nữ**: Đã chuẩn hóa ground baseline thế giới tại `Y = -1.80f` bù trừ transparent padding chân công trình/ghế/cột đèn và vỉa hè gạch hoa; khớp chính xác 100% ground collider và chân Player; làm lại walk cycle 4 frames luân phiên 2 chân cho cả Nam và Nữ, tiếp đất vững chãi tại baseline, ổn định thân người (triệt tiêu nảy thân 20px), transition tức thì 0f và triệt tiêu foot sliding với tốc độ 3.0 unit/s.
-- **[antigravity-game-dev-skill-001] Chuyển game-development skill sang Antigravity IDE và tích hợp vào project game**: Đã chuyển đổi thành công skill game-development từ nguồn davila7/claude-code-templates sang native Antigravity IDE (.agents/skills/game-development/) tích hợp Project Memory.
 
 ## 6. Việc Đang Làm & Việc Tiếp Theo
-- **Đang làm**: Đã hoàn thành task `web-dashboard-max-vfx-ui-003`. Sẵn sàng nhận task tiếp theo.
+- **Đang làm**: Đã hoàn thành task `unity-enter-shop-scene-transition-redo-006`.
 - **Việc tiếp theo**:
   1. M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt.
   2. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.

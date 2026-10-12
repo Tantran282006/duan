@@ -1,0 +1,16 @@
+[
+  {
+    "snapshot_id": "snapshot-20261009-173632",
+    "timestamp": "2026-10-09T10:36:32.246Z",
+    "local_time": "17:36:32 9/10/2026",
+    "milestone": "M0",
+    "milestone_m0_percent": 70,
+    "game_overall_percent": 22,
+    "total_tasks": 21,
+    "in_progress_count": 10,
+    "done_or_archived_count": 11,
+    "task_completion_rate_percent": 52.4,
+    "json_file": "docs/snapshots/snapshot-20261009-173632.json",
+    "md_file": "docs/snapshots/snapshot-20261009-173632.md"
+  }
+]

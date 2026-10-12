@@ -1,0 +1,233 @@
+{
+  "snapshot_id": "snapshot-20261009-173632",
+  "timestamp": "2026-10-09T10:36:32.246Z",
+  "local_time": "17:36:32 9/10/2026",
+  "project": "Phố Nhỏ",
+  "sources": [
+    "Local TaskStore (.tasks/runtime, .tasks/runtime/archive)",
+    "PROGRESS.md",
+    "PROJECT_STATE.md"
+  ],
+  "game_progress": {
+    "current_milestone": "M0",
+    "phase_description": "M0 (Khởi tạo dự án, Gameplay 2D Movement, Tương tác Cửa hàng & Web Developer Dashboard MAX VFX)",
+    "milestone_progress_percent": 70,
+    "game_overall_progress_percent": 22,
+    "clarification_note": "Tiến độ game phản ánh mức độ hoàn thành các tính năng gameplay, art, audio và server theo roadmap (M0 -> M6), độc lập với số lượng task kỹ thuật trong task queue.",
+    "completed_features": [
+      "Gameplay 2D Physics & Movement (PhoNhoPlayerMovement, Rigidbody2D, CapsuleCollider2D, ParallaxLayer)",
+      "Infinite Background & Road/Ground (01_Sky, 02_DistantTown, Sidewalk, Road, PhoNhoInfiniteGroundCollider)",
+      "Character & Animation (4 sprite strips 1x4 2048x640 PPU 256, Walk cycle nam & nữ tiếp đất baseline Y=-1.80f)",
+      "Shop Interaction & Cooking System (ShopInteractionTrigger 4 shops, PlayerWallet ledger bất biến + idempotency key, PlayerInventory, CookingService, ShopUIManager)",
+      "Web Developer Dashboard MAX VFX (http://127.0.0.1:5050 - Ambient Particle Canvas, Web Audio Synthesizer, Glassmorphism v2, Profiles Antigravity, Kanban Drag & Drop)",
+      "Tooling & Auto-Worker Daemon (worker.mjs daemon, Single-instance lock, REST Server, MCP Bridge, Cloud Bridge LIVE)"
+    ],
+    "next_priorities": [
+      "Task unity-enter-shop-scene-transition-redo-006: Chuyển scene nội thất thật vào quán (ShopInterior_HoneyBreakfast.unity)",
+      "M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt",
+      "M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger server-authoritative"
+    ]
+  },
+  "task_queue_metrics": {
+    "source": "TaskStore",
+    "total_recorded_tasks": 21,
+    "counts": {
+      "pending": 0,
+      "in_progress": 10,
+      "blocked": 0,
+      "done": 0,
+      "archived": 11,
+      "total_recorded": 21
+    },
+    "task_completion_rate_percent": 52.4,
+    "task_completion_formula": "11/21 = 52.4%",
+    "crucial_distinction": "Tỷ lệ tác vụ hoàn thành (task completion) phản ánh số lượng công việc kỹ thuật đã xử lý trong task queue, KHÔNG tương đương với tỷ lệ hoàn thành sản phẩm game (game completion)."
+  },
+  "active_tasks": [
+    {
+      "id": "character-animation-cleanup-01",
+      "title": "Làm sạch và sửa animation character nam/nữ theo sprite strip 1 hàng",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-03T16:55:55.505Z",
+      "updated_at": "2026-10-09T10:24:21.796Z"
+    },
+    {
+      "id": "unity-infinite-background-road-003",
+      "title": "Làm background và đường đi vô hạn, chưa lặp nhà",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-05T11:26:03.774Z",
+      "updated_at": "2026-10-07T13:17:24.213Z"
+    },
+    {
+      "id": "unity-shop-interaction-cooking-flow-004",
+      "title": "Prefab tương tác cửa hàng + luồng vào quầy nấu và phục vụ khách",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-05T14:53:40.808Z",
+      "updated_at": "2026-10-07T13:32:14.737Z"
+    },
+    {
+      "id": "web-dashboard-functional-completion-002",
+      "title": "Hoàn thiện toàn bộ UI web đã có để sử dụng thật",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-05T16:36:13.902Z",
+      "updated_at": "2026-10-07T16:01:30.227Z"
+    },
+    {
+      "id": "web-dashboard-max-vfx-ui-003",
+      "title": "Nâng cấp dashboard UI hiện đại với VFX cao cấp",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-05T16:52:35.338Z",
+      "updated_at": "2026-10-08T02:04:48.779Z"
+    },
+    {
+      "id": "unity-shop-real-scene-transition-005",
+      "title": "Sửa vào quán thành chuyển Scene thật, không dùng UI overlay",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-06T10:17:28.124Z",
+      "updated_at": "2026-10-08T13:36:15.549Z"
+    },
+    {
+      "id": "unity-enter-shop-scene-transition-redo-006",
+      "title": "Làm lại đúng yêu cầu: nhấn E phải chuyển cảnh thật vào quán",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-06T10:18:54.280Z",
+      "updated_at": "2026-10-06T11:14:13.822Z"
+    },
+    {
+      "id": "ide-unity-worker-recovery-007",
+      "title": "Khôi phục worker Unity bị treo và sửa lỗi compile/scene trước khi làm tiếp",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-07T14:58:52.779Z",
+      "updated_at": "2026-10-08T14:17:28.865Z"
+    },
+    {
+      "id": "git-uncommitted-audit-008",
+      "title": "P0 audit Git: kiểm tra >100 file chưa commit, không sửa/xóa/commit",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-07T17:36:22.493Z",
+      "updated_at": "2026-10-08T14:17:55.805Z"
+    },
+    {
+      "id": "project-memory-progress-snapshot-20261009-001",
+      "title": "Lưu snapshot báo cáo tiến độ game Phố Nhỏ vào Project Memory, bảo toàn lịch sử",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "revision": 2,
+      "created_at": "2026-10-09T10:25:44.770Z",
+      "updated_at": "2026-10-09T10:26:45.650Z"
+    }
+  ],
+  "archived_tasks_summary": [
+    {
+      "id": "unity-shop-interaction-cooking-flow-004",
+      "title": "Prefab tương tác cửa hàng + luồng vào quầy nấu và phục vụ khách",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "updated_at": "2026-10-07T13:32:14.737Z",
+      "result_summary": null
+    },
+    {
+      "id": "unity-infinite-background-road-003",
+      "title": "Làm background và đường đi vô hạn, chưa lặp nhà",
+      "status": "in_progress",
+      "worker": "antigravity-auto-worker-msi",
+      "updated_at": "2026-10-07T13:17:24.213Z",
+      "result_summary": null
+    },
+    {
+      "id": "unity-ground-art-walk-animation-002",
+      "title": "Sửa nhà/mặt đất bị lệch và làm lại walk animation nam nữ",
+      "status": "done",
+      "worker": "antigravity-worker-20261005-ground-walk-002",
+      "updated_at": "2026-10-05T10:38:11.004Z",
+      "result_summary": "Đã sửa triệt để lỗi nhà và mặt đất bị lệch, đồng thời làm lại walk animation 4 frames luân phiên hai chân cho cả nhân vật Nam và Nữ: 1) Chuẩn hóa GroundBaseline = -1.80f cho toàn bộ world; bù trừ transparent bottom padding cho các công trình (Ingredient_Shop, Boba_Shop, Player_House, Breakfast_Shop)"
+    },
+    {
+      "id": "antigravity-game-dev-skill-001",
+      "title": "Chuyển game-development skill sang Antigravity IDE và tích hợp vào project game",
+      "status": "done",
+      "worker": "antigravity-worker-20261005-game-dev-skill",
+      "updated_at": "2026-10-05T10:20:58.760Z",
+      "result_summary": "Đã hoàn thành toàn bộ yêu cầu của task antigravity-game-dev-skill-001: chuyển đổi thành công skill game-development từ nguồn davila7/claude-code-templates (MIT License) sang skill native dành riêng cho Antigravity IDE (.agents/skills/game-development/ và skills/game-development/); loại bỏ các giả đị"
+    },
+    {
+      "id": "project-memory-archive-001",
+      "title": "Thêm Project Memory và archive task đã hoàn thành cho IDE Agent",
+      "status": "done",
+      "worker": "antigravity-worker-20261005-memory-archive",
+      "updated_at": "2026-10-05T10:15:18.213Z",
+      "result_summary": "Đã hoàn thành toàn bộ yêu cầu của task project-memory-archive-001: xây dựng Project Memory bền vững qua PROJECT_STATE.md và module memory.mjs; cung cấp API /v1/context và tool get_project_context cho Agent lấy bối cảnh dự án + task active trong 1 call duy nhất (chỉ ~5.3 KiB thay vì quét toàn bộ lịch"
+    },
+    {
+      "id": "unity-map-player-movement-001",
+      "title": "Tạo map Unity 2D và nhân vật di chuyển trái/phải",
+      "status": "done",
+      "worker": "antigravity-worker-20261005-unity-map",
+      "updated_at": "2026-10-05T10:08:29.211Z",
+      "result_summary": "Đã hoàn thành toàn bộ yêu cầu của task unity-map-player-movement-001 trong project Unity. Triển khai controller vật lý PhoNhoPlayerMovement (Rigidbody2D Dynamic, CapsuleCollider2D, FreezeRotation Z), di chuyển ngang A/D và mũi tên trái/phải, bảo toàn trọng lực Y, tự động lật flipX và tích hợp Animat"
+    },
+    {
+      "id": "ide-accounts-backend-001",
+      "title": "Làm thật backend cục bộ + kết nối tab Tài khoản IDE cho Antigravity",
+      "status": "done",
+      "worker": "antigravity-worker-profile-main-session13",
+      "updated_at": "2026-10-04T16:12:13.781Z",
+      "result_summary": "Hoàn thành backend cục bộ cho tab Quản lý Tài khoản Antigravity IDE theo đúng yêu cầu cập nhật. Kết quả điều tra thực tế: Agent Antigravity không thấy quota trong context và không có tool/log/CLI đọc quota; tuân thủ nghiêm ngặt không dùng MITM proxy, không đọc token/cookie phiên. Đã xây dựng 3 nguồn"
+    },
+    {
+      "id": "web-dashboard-redesign-001",
+      "title": "Thiết kế lại dashboard Phố Nhỏ: tiến độ, kế hoạch, done log và tài khoản Antigravity",
+      "status": "done",
+      "worker": "antigravity-worker-20261004-session12",
+      "updated_at": "2026-10-04T15:30:17.881Z",
+      "result_summary": "Đã thiết kế và triển khai hoàn chỉnh ứng dụng Phố Nhỏ Developer Dashboard (web dashboard cục bộ). Giao diện Dark theme tokens đáp ứng laptop và mobile; 4 tab Tổng quan, Kế hoạch, Đã làm và Quản lý Profile Antigravity an toàn cục bộ."
+    },
+    {
+      "id": "character-animation-simple-outfit-02",
+      "title": "Tích hợp character trang phục giản dị và chuẩn hóa animation 1 hàng",
+      "status": "done",
+      "worker": "antigravity-worker-character-outfit-02",
+      "updated_at": "2026-10-03T17:31:56.625Z",
+      "result_summary": "Đã chuẩn hóa thành công 4 animation chính (Female Idle, Female Movement, Male Idle, Male Movement) thành các sprite strip 1 hàng ngang (1x4, kích thước 2048x640, mỗi frame 512x640, baseline Y=576, pivot 0.5, 0.1, 256 PPU). Trang phục giản dị đúng chuẩn cũ (nữ áo kem/trắng + short hồng; nam áo kem/tr"
+    },
+    {
+      "id": "test-01",
+      "title": "Kiểm tra bridge",
+      "status": "done",
+      "worker": "antigravity-worker-test-01",
+      "updated_at": "2026-10-03T17:05:18.762Z",
+      "result_summary": "Kết nối bridge giữa ChatGPT (Custom GPT) và dự án Antigravity IDE qua REST server (port 5000), ngrok tunnel và MCP phonho-task-bridge hoạt động hoàn toàn chính xác. Task được tiếp nhận và xử lý thành công."
+    },
+    {
+      "id": "character-cleanup-unity-check-001",
+      "title": "Kiểm tra Character Preview trong Play Mode",
+      "status": "done",
+      "worker": "antigravity-worker-20261003-session-001",
+      "updated_at": "2026-10-03T16:44:19.351Z",
+      "result_summary": "Đã chạy CharacterPlayModeValidator trong Unity 6000.4.3f1 batchmode; xác nhận 6 sheet (32 frame) chuẩn 512x640 PPU 256 pivot (0.5, 0.1), 4 clips Walk 8 FPS/Idle 2 FPS loopTime bật, 2 controllers và Scene Character_Preview với nền sáng/tối và script PhoNhoCharacterPreview (flipX trái, giữ hướng khi d"
+    }
+  ],
+  "verification": {
+    "bridge_tests": "21/21 passed (tools/ide-bridge)",
+    "unity_batchmode": "ShopInteractionCookingValidator 100% pass, InfiniteLayer 100% pass",
+    "worker_status": "antigravity-auto-worker-msi active and healthy"
+  }
+}

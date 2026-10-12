@@ -20,6 +20,15 @@
   - Hệ thống tiền tệ & ví `PlayerWallet`: Vốn khởi đầu chuẩn 200 Scoin, 10 Gem, 0 Tcoin. Mọi giao dịch tiền tệ đều đi qua `LedgerEntry` bất biến với `idempotency_key`.
   - Hệ thống kho đồ `PlayerInventory` và dịch vụ chế biến `CookingService`.
   - Giao diện UI `ShopUIManager`: TopBar HUD tiền tệ, Box prompt tương tác, Modal Dialog chuyên biệt cho từng công trình, thanh tiến độ nấu ăn real-time.
+- **Scene Nội Thất Quán Ăn Sáng & Chuyển Scene Thật (Task unity-enter-shop-scene-transition-redo-006)**:
+  - Hoàn thiện Scene `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity` với mỹ thuật Chibi/pixel art Việt Nam ấm áp (tường vàng kem Hội An, sàn gạch bông Đông Dương, quầy bếp ốp la/nồi phở, bàn ăn gỗ, cửa kính có thảm chào khách, bảng menu phấn).
+  - Quản lý chuyển scene bằng `SceneTransitionManager.cs` tĩnh qua `SceneManager.LoadSceneAsync`, loại bỏ 100% việc dùng popup UI giả lập vào quán.
+  - Tự động lưu vị trí return spawn $X=6.75f, Y=-1.80f$, gắn `StreetSpawnController.cs` đưa Player về đúng trước cửa quán và snap camera khi quay lại phố.
+  - Player di chuyển đầy đủ bên trong (`PhoNhoPlayerMovement`), camera bám mượt (`PhoNhoCameraFollow`), colliders sàn và tường bao quanh chắc chắn.
+  - Quầy nấu ăn kết nối `CookingService`, `PlayerInventory`, `PlayerWallet` trừ bột mì/trứng, hoàn thành món Bánh Mì Ốp La và cộng Scoin vào ví theo ledger có idempotency key.
+  - Trigger cửa thoát `ShopExitTrigger` nhấn `[E]` chuyển về đường phố an toàn.
+  - Chợ nguyên liệu trên phố giữ nguyên modal UI mua sỉ, không bị ảnh hưởng.
+  - Build Settings đăng ký đầy đủ cả 2 scene; bộ validator `ShopInteriorPlayModeValidator` chạy trên Unity 6000.4.3f1 batchmode đạt 100% pass (tất cả 8/8 hạng mục); đã xuất ảnh Game View 1080p `docs/snapshots/shop-interior-view-1080p.png`.
 - **Web Developer Dashboard MAX VFX Đẳng Cấp (Task web-dashboard-max-vfx-ui-003 & 002)**:
   - Toàn bộ UI web (`http://127.0.0.1:5050`) đạt chuẩn thẩm mỹ cao cấp với rich aesthetics & MAX VFX sống động:
     - Canvas Ambient Particle VFX (`#ambient-canvas`): Các hạt ánh sáng đèn lồng ấm áp trôi lơ lửng, phản ứng tương tác dạt ra khi di chuột.
@@ -29,28 +38,77 @@
     - Toast Notification hiện đại (`showToast`): Thay thế toàn bộ `alert(...)` thô sơ bằng toast có progress bar tự co lại theo thời gian, phát âm thanh tương ứng theo level.
     - Hiệu ứng sóng nước Ripple (`setupRippleEffects`) trên toàn bộ nút bấm tương tác.
     - Chức năng thật 100%: Tạo task mới thật, thêm/xóa profile thật, cài đặt quota cảnh báo, action buttons trong task drawer, HTML5 drag & drop giữa các cột Kanban.
-- **Project Memory & Token Optimization**:
+- **Project Memory & Snapshots Tiến Độ Dự Án (Task project-memory-progress-snapshot-20261009-001)**:
   - Đã có `PROJECT_STATE.md` (Project Memory/Handoff) cô đọng mục tiêu, kiến trúc, quyết định chốt.
-  - Endpoint `GET /v1/context` và MCP tool `get_project_context` hoạt động ổn định.
+  - Đã thiết lập hệ thống snapshot tiến độ độc lập tại `docs/snapshots/` (`snapshot-20261009-173632.json` và `.md`).
+  - Lịch sử append-only được bảo toàn 100% qua `docs/snapshots/SNAPSHOT_HISTORY.md` và `docs/snapshots/history.json`.
+  - Tách bạch minh bạch: Tiến độ sản phẩm game M0 đạt ~70% (tổng thể game ~22%); tỷ lệ task queue hoàn thành 52.4% (11/21 task nghiệp vụ đã xử lý/lưu trữ).
+  - Tích hợp endpoint `GET /api/snapshots`, bổ sung `latestSnapshot` vào `/api/overview` Web Developer Dashboard (`http://127.0.0.1:5050`) và Cloud Bridge.
+  - Endpoint `GET /v1/context` và MCP tool `get_project_context` hoạt động ổn định, bổ sung danh sách snapshot gần nhất.
 - **Chạy được**:
   - Web Developer Dashboard: chạy qua `node tools/ide-bridge/dashboard/server.mjs` (truy cập `http://127.0.0.1:5050`).
-  - Scene `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`: Di chuyển vô tận, lại gần các tiệm bấm `[E]` để mua nguyên liệu, pha trà sữa, nấu ăn sáng và xem hồ sơ nhà phố.
+  - Scene `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`: Di chuyển vô tận, lại gần tiệm ăn sáng bấm `[E]` chuyển thật sang Scene nội thất `ShopInterior_HoneyBreakfast.unity`, lại gần chợ nguyên liệu mở mua sỉ, các tiệm khác mở dialog tương ứng.
+  - Scene `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity`: Di chuyển nhân vật trong quán, camera bám theo, nấu ăn nhận Scoin, bấm `[E]` tại cửa thoát quay về đúng trước quán ngoài phố.
+  - Tự động kiểm thử: Menu Unity `Phố Nhỏ > Gameplay > Kiểm tra Scene Nội Thất & Chụp Ảnh` hoặc CLI batchmode `-executeMethod PhoNho.Gameplay.Editor.ShopInteriorPlayModeValidator.ValidateFromCommandLine` (100% pass).
 - **IDE Auto-Worker Daemon (Task ide-bridge-auto-worker-bootstrap-007)**:
   - Đã triển khai hoàn chỉnh daemon thường trực `tools/ide-bridge/worker.mjs` tự động khởi động khi mở workspace qua `.vscode/tasks.json` (`runOn: folderOpen`) và `.vscode/settings.json` (`task.allowAutomaticTasks: on`).
   - Hỗ trợ single-instance lock `.worker.lock`, heartbeat `.tasks/runtime/worker-status.json`, log an toàn `.tasks/runtime/ide-worker.log` redact secrets.
   - Tích hợp cơ chế dispatch chính thức vào Antigravity Agent qua `agentapi send-message` và companion `antigravity-ide.cmd chat -r`.
   - Cơ chế lease recovery (10 phút) và Queue policy ưu tiên task `unity-enter-shop-scene-transition-redo-006`.
-  - Bộ test unit `worker.test.mjs` và test tích hợp `auto_worker_e2e.mjs` đạt 100% pass (22/22 test suites pass).
-  - Worker daemon hiện đang chạy thường trực trong background (`antigravity-auto-worker-msi`) và đã tự động claim task `unity-enter-shop-scene-transition-redo-006` sang `in_progress`.
+  - Bộ test unit `worker.test.mjs` và test tích hợp `auto_worker_e2e.mjs` đạt 100% pass (23/23 test suites pass).
 
 ## VIỆC TIẾP THEO (theo thứ tự)
 
-1. Task `unity-enter-shop-scene-transition-redo-006`: Nhấn E chuyển scene thật vào quán `ShopInterior_HoneyBreakfast.unity`, không dùng UI overlay, có điểm spawn và Exit quay về trước cửa quán.
-2. M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt.
-3. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.
-4. M1: Triển khai đánh giá khách hàng (review/sao), gắn chặt với đơn hàng hoàn tất.
+1. M0: Hoàn thiện URP 2D, Addressables và Localization tiếng Việt.
+2. M0/M1: Dựng backend Docker Nakama + PostgreSQL, kiểm tra kết nối RPC và đồng bộ Ledger lên server.
+3. M1: Triển khai đánh giá khách hàng (review/sao), gắn chặt với đơn hàng hoàn tất.
+4. M1: Mở rộng thêm Scene nội thất Quán Trà Sữa `ShopInterior_Boba.unity`.
 
 ## NHẬT KÝ PHIÊN
+
+### Phiên 27 — 2026-10-09 (Khóa và ghi nhớ tọa độ mặc định cố định của riêng từng nhà)
+- **Mốc**: M0 / Tọa độ Cố Định Từng Nhà & Scene Layout Persistence
+- **Đã làm**:
+  - Ghi nhận và chuẩn hóa 4 bộ tọa độ và tỉ lệ mặc định riêng biệt của từng nhà từ kiểm tra trực quan Inspector của người dùng:
+    - `Ingredient_Shop`: Position `(-7.05, 0.8, 0)`, Scale `0.3781139`
+    - `Boba_Shop`: Position `(-2.4, 0.7, 0)`, Scale `0.3583474`
+    - `Player_House`: Position `(2.15, 1.4, 0)`, Scale `0.3774238`
+    - `Breakfast_Shop`: Position `(6.75, 0.8, 0)`, Scale `0.3741197`
+  - Tạo `BuildingDefaultCoordinates.cs` định nghĩa cấu hình `BuildingPlacement` bất biến và bảng tra cứu chuẩn cho toàn bộ công trình.
+  - Tạo component `PhoNhoBuildingAnchor.cs` gắn vào từng nhà để bảo vệ, tự động khôi phục và cung cấp ContextMenu "Khôi phục tọa độ mặc định" trong Inspector.
+  - Cập nhật `PhoNhoGameplaySceneBuilder.cs` sử dụng `CreateFixedBuilding` trỏ trực tiếp vào `BuildingDefaultCoordinates`, triệt tiêu hoàn toàn tình trạng sai lệch hoặc dịch chuyển vị trí khi build/tái tạo scene.
+  - Cập nhật trực tiếp `CityOverworld_PlayerMovement.unity` lưu chuẩn 4 bộ tọa độ này.
+  - Bổ sung bước kiểm tra xác thực tọa độ 4 nhà vào `ShopInteriorPlayModeValidator.cs` (`ValidateBuildingCoordinates`), đảm bảo không có bất kỳ drift/lệch nào trong các quy trình kiểm thử tự động.
+- **File chính**: `Assets/PhoNho/Scripts/Map/BuildingDefaultCoordinates.cs`, `Assets/PhoNho/Scripts/Map/PhoNhoBuildingAnchor.cs`, `Assets/PhoNho/Editor/PhoNhoGameplaySceneBuilder.cs`, `Assets/PhoNho/Editor/ShopInteriorPlayModeValidator.cs`, `Assets/PhoNho/Scenes/CityOverworld_PlayerMovement.unity`, `PROJECT_STATE.md`, `PROGRESS.md`.
+- **Cách chạy/kiểm tra**: Mở Inspector kiểm tra 4 nhà trong `CityOverworld_PlayerMovement.unity` có tọa độ khớp 100%; click chuột phải trên component `PhoNhoBuildingAnchor` chọn "Khôi phục tọa độ mặc định".
+- **Lỗi / nợ kỹ thuật**: Không.
+
+### Phiên 26 — 2026-10-09 (Hoàn thành Task unity-enter-shop-scene-transition-redo-006: Scene Nội Thất Quán Ăn Sáng & Chuyển Scene Thật 2 Chiều)
+- **Mốc**: M0 / Unity 2D Shop Interior Scene & Scene Transition
+- **Đã làm**:
+  - Dựng hoàn chỉnh Scene nội thất `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity` với mỹ thuật Chibi/pixel art Việt Nam đồng bộ đường phố (tường vàng Hội An, sàn gạch bông Đông Dương, quầy bếp ốp la/nồi phở, bàn ghế gỗ, cửa kính có thảm chào khách, bảng menu).
+  - Triển khai `SceneTransitionManager.cs` chuyển cảnh 2 chiều bằng `SceneManager.LoadSceneAsync`, chống spam phím [E], lưu vị trí return spawn.
+  - Triển khai `StreetSpawnController.cs` tự động đặt Player chính xác trước cửa quán ($X=6.75f, Y=-1.80f$) và snap camera khi từ quán quay lại phố.
+  - Triển khai `ShopExitTrigger.cs` tại cửa ra vào nội thất, nhấn [E] chuyển ngược về scene ngoài phố.
+  - Tích hợp `CookingService`, `PlayerInventory`, `PlayerWallet` tại quầy chế biến: nấu Bánh Mì Ốp La trừ nguyên liệu bột mì/trứng, cộng doanh thu Scoin qua Ledger có idempotency_key.
+  - Giữ nguyên chợ nguyên liệu `Ingredient_Shop` mở modal UI mua sỉ trên phố.
+  - Cập nhật Build Settings đăng ký cả 2 scene (`CityOverworld_PlayerMovement.unity` và `ShopInterior_HoneyBreakfast.unity`).
+  - Viết bộ Play Mode validator `ShopInteriorPlayModeValidator.cs`, chạy headless Unity 6000.4.3f1 batchmode đạt 100% pass (8/8 tiêu chí). Chụp ảnh Game View 1080p tại `docs/snapshots/shop-interior-view-1080p.png`.
+- **File chính**: `Assets/PhoNho/Scenes/ShopInterior_HoneyBreakfast.unity`, `Assets/PhoNho/Scripts/Gameplay/SceneTransitionManager.cs`, `Assets/PhoNho/Scripts/Gameplay/StreetSpawnController.cs`, `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopExitTrigger.cs`, `Assets/PhoNho/Scripts/Gameplay/Interaction/ShopInteractionTrigger.cs`, `Assets/PhoNho/Scripts/UI/ShopUIManager.cs`, `Assets/PhoNho/Editor/HoneyBreakfastTextureGenerator.cs`, `Assets/PhoNho/Editor/HoneyBreakfastSceneBuilder.cs`, `Assets/PhoNho/Editor/ShopInteriorPlayModeValidator.cs`, `docs/snapshots/shop-interior-view-1080p.png`.
+- **Cách chạy/kiểm tra**: Mở Unity chạy Scene ngoài phố hoặc nội thất; chạy batchmode validator: `Unity.exe -batchmode -quit -projectPath D:\new -executeMethod PhoNho.Gameplay.Editor.ShopInteriorPlayModeValidator.ValidateFromCommandLine -logFile log.txt` (exit code 0, allPassed=true).
+- **Lỗi / nợ kỹ thuật**: Không. Toàn bộ 8/8 tiêu chí Play Mode pass sạch.
+
+### Phiên 25 — 2026-10-09 (Báo cáo tiến độ dự án, thiết lập snapshot Project Memory và cập nhật web)
+- **Mốc**: M0 / Project Memory, Snapshot & Web Dashboard
+- **Đã làm**:
+  - Đối chiếu thực tế task queue: 21 task nghiệp vụ (11 archived/done, 10 in_progress, 0 pending, 0 blocked).
+  - Phân định rõ ràng tiến độ game (M0 ~70%, tổng thể game ~22%) và tỷ lệ task queue (52.4%).
+  - Thiết lập cơ chế snapshot append-only độc lập tại `docs/snapshots/`: tạo snapshot `snapshot-20261009-173632.json` và `.md`, ghi lịch sử vào `SNAPSHOT_HISTORY.md` và `history.json`.
+  - Mở rộng `memory.mjs`, `store.mjs` và Web Dashboard `server.mjs` (endpoint `GET /api/snapshots` và cập nhật `/api/overview`).
+  - Viết unit test mới cho snapshot: toàn bộ test suite pass 23/23 (100%).
+  - Báo cáo hoàn tất task `project-memory-progress-snapshot-20261009-001` qua tool `report_result` và archive an toàn.
+- **File chính**: `docs/snapshots/snapshot-20261009-173632.json`, `docs/snapshots/snapshot-20261009-173632.md`, `docs/snapshots/SNAPSHOT_HISTORY.md`, `tools/ide-bridge/memory.mjs`, `tools/ide-bridge/store.mjs`, `tools/ide-bridge/dashboard/server.mjs`, `tools/ide-bridge/test/memory.test.mjs`, `PROJECT_STATE.md`.
+- **Kiểm tra**: `node --test test/*.test.mjs` (23 pass, 0 fail), kiểm tra file snapshot và lịch sử append-only, MCP `get_project_context`.
 
 ### Phiên 24 — 2026-10-08 (Lọc, kiểm tra toàn vẹn và commit toàn bộ 109 file dự án)
 - **Mốc**: M0 / Tooling & Audit Git Commit

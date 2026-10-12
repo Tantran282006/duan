@@ -144,24 +144,25 @@ namespace PhoNho.Gameplay.Editor
             CreateInfiniteSky(skyLayer, camera.transform);
             CreateInfiniteDistantTown(distantLayer, camera.transform);
 
-            // Buildings: Giữ cố định tại khu phố hiện tại, TUYỆT ĐỐI KHÔNG recycle/nhân bản nhà
-            CreateGroundedBuilding("Shade_Tree", "Cây nhiệt đới rợp bóng-1.png", middleLayer, 0.1f, GroundBaseline, 5.6f, 32f / 1297f, -10, new Color(0.92f, 0.96f, 0.9f, 1f));
+            // Buildings: Tọa độ & tỉ lệ mặc định cố định riêng cho từng nhà (theo BuildingDefaultCoordinates [CHỐT])
+            CreateFixedBuilding(BuildingDefaultCoordinates.ShadeTree, "Cây nhiệt đới rợp bóng-1.png", middleLayer, new Color(0.92f, 0.96f, 0.9f, 1f));
 
-            var ingShopSr = CreateGroundedBuilding("Ingredient_Shop", "Cửa hàng nguyên liệu Việt-5.png", middleLayer, -7.05f, GroundBaseline, 4.25f, 54f / 1199f, 0, Color.white);
+            var ingShopSr = CreateFixedBuilding(BuildingDefaultCoordinates.IngredientShop, "Cửa hàng nguyên liệu Việt-5.png", middleLayer, Color.white);
             var ingTrigger = ingShopSr.gameObject.AddComponent<ShopInteractionTrigger>();
             ingTrigger.Configure(ShopType.IngredientShop, "Chợ Nguyên Liệu Việt", "Nhấn [E] Mua sỉ nguyên liệu", 2.5f);
 
-            var bobaShopSr = CreateGroundedBuilding("Boba_Shop", "Cửa hàng trà sữa hồng đáng yêu-3.png", middleLayer, -2.4f, GroundBaseline, 4.25f, 44f / 1199f, 0, Color.white);
+            var bobaShopSr = CreateFixedBuilding(BuildingDefaultCoordinates.BobaShop, "Cửa hàng trà sữa hồng đáng yêu-3.png", middleLayer, Color.white);
             var bobaTrigger = bobaShopSr.gameObject.AddComponent<ShopInteractionTrigger>();
             bobaTrigger.Configure(ShopType.BobaShop, "Tiệm Trà Sữa Hồng Đáng Yêu", "Nhấn [E] Pha chế trà sữa", 2.5f);
 
-            var houseSr = CreateGroundedBuilding("Player_House", "Nhà phố hai tầng hoa giấy ấm áp-5.png", middleLayer, 2.15f, GroundBaseline, 5.45f, 116f / 1536f, 1, Color.white);
+            var houseSr = CreateFixedBuilding(BuildingDefaultCoordinates.PlayerHouse, "Nhà phố hai tầng hoa giấy ấm áp-5.png", middleLayer, Color.white);
             var houseTrigger = houseSr.gameObject.AddComponent<ShopInteractionTrigger>();
             houseTrigger.Configure(ShopType.PlayerHouse, "Nhà Phố Của Bạn", "Nhấn [E] Vào nhà xem tủ đồ", 2.8f);
 
-            var breakfastSr = CreateGroundedBuilding("Breakfast_Shop", "Quán ăn sáng Việt màu mật ong-4.png", middleLayer, 6.75f, GroundBaseline, 4.25f, 49f / 1199f, 0, Color.white);
+            var breakfastSr = CreateFixedBuilding(BuildingDefaultCoordinates.BreakfastShop, "Quán ăn sáng Việt màu mật ong-4.png", middleLayer, Color.white);
             var breakfastTrigger = breakfastSr.gameObject.AddComponent<ShopInteractionTrigger>();
-            breakfastTrigger.Configure(ShopType.BreakfastShop, "Quán Ăn Sáng Mật Ong", "Nhấn [E] Nấu đồ ăn sáng", 2.5f);
+            breakfastTrigger.Configure(ShopType.BreakfastShop, "Quán Ăn Sáng Mật Ong", "Nhấn [E] Vào Quán Ăn Sáng", 2.5f);
+            breakfastTrigger.ConfigureSceneTransition(true, "ShopInterior_HoneyBreakfast");
 
             // Infinite Road & Ground: Sidewalk & Road cuộn vô tận
             CreateInfiniteSidewalk(groundLayer, camera.transform);
@@ -221,6 +222,8 @@ namespace PhoNho.Gameplay.Editor
             cookingService.Configure(wallet, inventory);
             uiManager.Configure(wallet, inventory, cookingService, playerMovement);
 
+            playerInstance.AddComponent<StreetSpawnController>();
+
             // 6. EventSystem for UI interactions
             if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
             {
@@ -232,6 +235,8 @@ namespace PhoNho.Gameplay.Editor
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
+
+            HoneyBreakfastSceneBuilder.UpdateBuildSettings();
 
             Debug.Log($"[PhoNhoGameplaySceneBuilder] Đã lưu Scene Gameplay tại: {ScenePath}");
             return scene;
@@ -368,6 +373,24 @@ namespace PhoNho.Gameplay.Editor
             float bottomPadWorld = bottomPadFraction * targetHeight;
             float bottomY = groundBaseline - bottomPadWorld;
             renderer.transform.position = new Vector3(x, bottomY - sprite.bounds.min.y * scale, 0f);
+            return renderer;
+        }
+
+        private static SpriteRenderer CreateFixedBuilding(
+            BuildingPlacement placement,
+            string fileName,
+            Transform parent,
+            Color tint)
+        {
+            Sprite sprite = LoadSprite(fileName);
+            if (sprite == null) return null;
+
+            SpriteRenderer renderer = CreateRenderer(placement.buildingName, sprite, parent, placement.sortingOrder, tint);
+            renderer.transform.localScale = placement.defaultScale;
+            renderer.transform.position = placement.defaultPosition;
+
+            // Gắn component PhoNhoBuildingAnchor để bảo vệ cố định tọa độ
+            renderer.gameObject.AddComponent<PhoNhoBuildingAnchor>();
             return renderer;
         }
 

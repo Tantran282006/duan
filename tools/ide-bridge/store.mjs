@@ -76,7 +76,7 @@ async function atomic(file, value) {
   finally { await fs.rm(temp, { force: true }); }
 }
 
-import { updateProjectMemoryWithTask, getProjectContext } from './memory.mjs';
+import { updateProjectMemoryWithTask, getProjectContext, createProgressSnapshot, listProgressSnapshots } from './memory.mjs';
 
 export class TaskStore {
   constructor(root) {
@@ -147,8 +147,8 @@ export class TaskStore {
   }
   async all() {
     const names = (await fs.readdir(this.dir)).filter(n => /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}\.json$/.test(n));
-    const tasks = await Promise.all(names.map(n => this.read(n.slice(0, -5))));
-    return tasks.sort((a, b) => (a.created_at || '').localeCompare(b.created_at || '') || (a.id || '').localeCompare(b.id || ''));
+    const tasks = await Promise.all(names.map(n => this.read(n.slice(0, -5)).catch(() => null)));
+    return tasks.filter(t => t && t.id).sort((a, b) => (a.created_at || '').localeCompare(b.created_at || '') || (a.id || '').localeCompare(b.id || ''));
   }
   async listArchived(offset = 0) {
     if (!Number.isSafeInteger(offset) || offset < 0) fail('Invalid offset');
@@ -256,6 +256,12 @@ export class TaskStore {
   }
   async getContext(options = {}) {
     return getProjectContext(this.root, this, options);
+  }
+  async createSnapshot(extra = {}) {
+    return createProgressSnapshot(this.root, this, extra);
+  }
+  async listSnapshots() {
+    return listProgressSnapshots(this.root);
   }
   async submit(input) {
     const data = validateTask(input);

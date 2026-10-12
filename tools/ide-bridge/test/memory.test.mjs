@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { TaskStore } from '../store.mjs';
 import { callTool } from '../mcp.mjs';
-import { readProjectMemory, updateProjectMemoryWithTask, getProjectContext } from '../memory.mjs';
+import { readProjectMemory, updateProjectMemoryWithTask, getProjectContext, createProgressSnapshot, listProgressSnapshots } from '../memory.mjs';
 
 async function createTempWorkspace() {
   const root = path.join(tmpdir(), 'phonho-test-' + randomUUID());
@@ -240,3 +240,89 @@ test('get_project_context: returns condensed memory and active tasks only in 1 c
     await fs.rm(root, { recursive: true, force: true });
   }
 });
+
+test('progress snapshots: creation, append-only history, distinction between tasks and game progress', async () => {
+  const root = await createTempWorkspace();
+  try {
+    const store = await new TaskStore(root).init();
+
+    await store.submit({
+      id: 'task-snap-1',
+      title: 'Task 1',
+      goal: 'Goal 1',
+      files: ['Assets/Scripts'],
+      steps: ['S1'],
+      acceptance_criteria: ['AC1']
+    });
+    await store.claim({ id: 'task-snap-1', worker: 'worker-snap' });
+    await store.report('task-snap-1', {
+      worker: 'worker-snap',
+      expected_revision: 2,
+      status: 'done',
+      summary: 'Task 1 done',
+      changed_files: ['Assets/Scripts'],
+      validation: ['OK'],
+      commit: null
+    });
+    await store.archive('task-snap-1');
+
+    await store.submit({
+      id: 'task-snap-2',
+      title: 'Task 2',
+      goal: 'Goal 2',
+      files: ['Assets/Scripts'],
+      steps: ['S2'],
+      acceptance_criteria: ['AC2']
+    });
+    await store.claim({ id: 'task-snap-2', worker: 'worker-snap' });
+
+    // Create 1st snapshot
+    const snap1 = await createProgressSnapshot(root, store, {
+      milestone: 'M0',
+      milestone_m0_percent: 70,
+      game_overall_percent: 22
+    });
+
+    assert.ok(snap1.snapshot_id);
+    assert.equal(snap1.data.task_queue_metrics.counts.archived, 1);
+    assert.equal(snap1.data.task_queue_metrics.counts.in_progress, 1);
+    assert.equal(snap1.data.game_progress.milestone_progress_percent, 70);
+    assert.equal(snap1.data.game_progress.game_overall_progress_percent, 22);
+
+    // Verify files exist
+    const jsonExists = await fs.access(path.join(root, 'docs', 'snapshots', `${snap1.snapshot_id}.json`)).then(() => true).catch(() => false);
+    const mdExists = await fs.access(path.join(root, 'docs', 'snapshots', `${snap1.snapshot_id}.md`)).then(() => true).catch(() => false);
+    const histExists = await fs.access(path.join(root, 'docs', 'snapshots', 'history.json')).then(() => true).catch(() => false);
+    const mdHistExists = await fs.access(path.join(root, 'docs', 'snapshots', 'SNAPSHOT_HISTORY.md')).then(() => true).catch(() => false);
+
+    assert.equal(jsonExists, true);
+    assert.equal(mdExists, true);
+    assert.equal(histExists, true);
+    assert.equal(mdHistExists, true);
+
+    // Sleep briefly then create 2nd snapshot to test append-only history preservation
+    await new Promise(r => setTimeout(r, 1100));
+    const snap2 = await createProgressSnapshot(root, store, {
+      milestone: 'M0',
+      milestone_m0_percent: 72,
+      game_overall_percent: 23
+    });
+
+    assert.notEqual(snap1.snapshot_id, snap2.snapshot_id);
+
+    // List snapshots
+    const history = await listProgressSnapshots(root);
+    assert.equal(history.length, 2);
+    assert.equal(history[0].snapshot_id, snap1.snapshot_id);
+    assert.equal(history[1].snapshot_id, snap2.snapshot_id);
+
+    // getProjectContext includes snapshots
+    const context = await getProjectContext(root, store);
+    assert.ok(Array.isArray(context.snapshots));
+    assert.equal(context.snapshots.length, 2);
+    assert.equal(context.snapshots[0].snapshot_id, snap2.snapshot_id); // newest first
+  } finally {
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+

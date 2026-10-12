@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { readEnvironment, rootFor, argumentsFor } from '../config.mjs';
 import { parseProgressMd, readRuntimeTasks, fetchCloudTasks, loadProfiles, saveProfiles, hashPin, maskEmail } from './data.mjs';
 import { TaskStore } from '../store.mjs';
-import { updateProjectMemoryWithTask } from '../memory.mjs';
+import { updateProjectMemoryWithTask, listProgressSnapshots } from '../memory.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
@@ -97,6 +97,9 @@ export function createDashboardServer(root, env) {
           const sessionCount = progress.sessions.length;
           const completionPercent = Math.min(100, Math.round(20 + (sessionCount * 6) + (metrics.done * 10)));
 
+          const snapshots = await listProgressSnapshots(root).catch(() => []);
+          const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+
           return send(200, {
             currentMilestone: progress.currentMilestone,
             completionPercent,
@@ -105,10 +108,17 @@ export function createDashboardServer(root, env) {
             whatWorks: progress.whatWorks,
             knownDebt: progress.knownDebt,
             recentSessions: progress.sessions.slice(0, 5),
+            latestSnapshot,
+            snapshotsCount: snapshots.length,
             bridgeUrl: env.BRIDGE_PUBLIC_URL || 'https://game.zcloudviet.xyz',
-            sources: ['PROGRESS.md', 'Local Runtime .tasks', 'Cloud Bridge'],
+            sources: ['PROGRESS.md', 'Local Runtime .tasks', 'Cloud Bridge', 'Project Snapshots'],
             lastUpdated: new Date().toISOString()
           });
+        }
+
+        if (url.pathname === '/api/snapshots' && req.method === 'GET') {
+          const snapshots = await listProgressSnapshots(root).catch(() => []);
+          return send(200, { snapshots });
         }
 
         if (url.pathname === '/api/tasks' && req.method === 'GET') {

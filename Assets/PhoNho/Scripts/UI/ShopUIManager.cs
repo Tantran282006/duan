@@ -109,6 +109,7 @@ namespace PhoNho.UI
         {
             ShopInteractionTrigger.OnShopProximityChanged += HandleShopProximityChanged;
             ShopInteractionTrigger.OnShopInteracted += HandleShopInteracted;
+            ShopExitTrigger.OnExitProximityChanged += HandleExitProximityChanged;
 
             if (_wallet != null) _wallet.OnBalanceChanged += HandleBalanceChanged;
             if (_cookingService != null)
@@ -125,6 +126,7 @@ namespace PhoNho.UI
         {
             ShopInteractionTrigger.OnShopProximityChanged -= HandleShopProximityChanged;
             ShopInteractionTrigger.OnShopInteracted -= HandleShopInteracted;
+            ShopExitTrigger.OnExitProximityChanged -= HandleExitProximityChanged;
 
             if (_wallet != null) _wallet.OnBalanceChanged -= HandleBalanceChanged;
             if (_cookingService != null)
@@ -171,8 +173,26 @@ namespace PhoNho.UI
             }
         }
 
+        private void HandleExitProximityChanged(ShopExitTrigger trigger, bool isInside)
+        {
+            if (isInside)
+            {
+                ShowPrompt(trigger.PromptText);
+            }
+            else
+            {
+                HidePrompt();
+            }
+        }
+
         private void HandleShopInteracted(ShopInteractionTrigger trigger)
         {
+            if (trigger.LoadSceneOnInteract)
+            {
+                // This shop triggers a real scene transition, do not open overlay dialog
+                return;
+            }
+
             OpenShopDialog(trigger.ShopType, trigger.ShopDisplayName);
         }
 

@@ -15,6 +15,10 @@ namespace PhoNho.Gameplay.Interaction
         [SerializeField] private string _shopDisplayName = "Cửa Hàng";
         [SerializeField] private string _promptText = "Nhấn [E] để vào quán";
 
+        [Header("Scene Transition")]
+        [SerializeField] private bool _loadSceneOnInteract = false;
+        [SerializeField] private string _targetSceneName = "ShopInterior_HoneyBreakfast";
+
         [Header("Detection")]
         [Tooltip("Maximum horizontal and Euclidean distance from player to activate prompt.")]
         [SerializeField] private float _interactionRadius = 2.4f;
@@ -32,6 +36,8 @@ namespace PhoNho.Gameplay.Interaction
         public string PromptText => _promptText;
         public float InteractionRadius => _interactionRadius;
         public bool IsPlayerInside => _isPlayerInside;
+        public bool LoadSceneOnInteract => _loadSceneOnInteract;
+        public string TargetSceneName => _targetSceneName;
 
         public void Configure(ShopType type, string displayName, string prompt, float radius = 2.4f)
         {
@@ -39,6 +45,12 @@ namespace PhoNho.Gameplay.Interaction
             _shopDisplayName = displayName;
             _promptText = prompt;
             _interactionRadius = radius;
+        }
+
+        public void ConfigureSceneTransition(bool loadScene, string sceneName)
+        {
+            _loadSceneOnInteract = loadScene;
+            _targetSceneName = sceneName;
         }
 
         private void OnEnable()
@@ -84,6 +96,12 @@ namespace PhoNho.Gameplay.Interaction
 
         public void TriggerInteraction()
         {
+            if (_loadSceneOnInteract && !string.IsNullOrEmpty(_targetSceneName))
+            {
+                SceneTransitionManager.EnterShop(_targetSceneName, transform.position);
+                return;
+            }
+
             OnShopInteracted?.Invoke(this);
         }
 
